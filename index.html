@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python FAANG Cheat Sheet</title>
+<style>
+  :root {
+    --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;
+    --border:#2e3452;--text:#e2e8f0;--muted:#8892b0;
+    --green:#4ade80;--blue:#60a5fa;--amber:#fbbf24;
+    --red:#f87171;--purple:#c084fc;--teal:#2dd4bf;
+    --orange:#fb923c;--code-bg:#0d1117;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
+  header{padding:20px 24px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100}
+  h1{font-size:21px;font-weight:700;color:var(--amber);margin-bottom:3px}
+  .subtitle{font-size:12px;color:var(--muted);margin-bottom:12px}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-bottom:12px}
+  input[type=text]{flex:1;min-width:220px;padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px}
+  input[type=text]:focus{outline:none;border-color:var(--amber)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .tab:hover{color:var(--text);border-color:var(--amber)}
+  .tab.active{background:var(--amber);color:#111;border-color:var(--amber);font-weight:700}
+  main{padding:16px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:var(--bg3);user-select:none}
+  .card-head:hover{background:#2a2f4a}
+  .card-title{font-size:13px;font-weight:600;color:var(--text)}
+  .card-meta{display:flex;align-items:center;gap:6px}
+  .badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700}
+  .bg-g{background:#14532d;color:var(--green)}
+  .bg-b{background:#1e3a5f;color:var(--blue)}
+  .bg-a{background:#431407;color:var(--amber)}
+  .bg-r{background:#450a0a;color:var(--red)}
+  .bg-p{background:#3b0764;color:var(--purple)}
+  .bg-t{background:#042f2e;color:var(--teal)}
+  .bg-o{background:#431407;color:var(--orange)}
+  .arrow{font-size:10px;color:var(--muted);transition:transform .2s}
+  .arrow.open{transform:rotate(180deg)}
+  .card-body{max-height:0;overflow:hidden;opacity:0;padding:0 14px;transition:max-height 0.3s ease,opacity 0.2s ease,padding 0.3s ease}
+  .card-body.open{max-height:5000px;opacity:1;padding:12px 14px}
+  .note{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.65}
+  .note strong{color:var(--amber)}
+  .block{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:10px;position:relative}
+  .block:last-child{margin-bottom:0}
+  .lbl{font-size:10px;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+  pre{font-family:'JetBrains Mono','Fira Code','Courier New',monospace;font-size:12px;line-height:1.72;overflow-x:auto;color:var(--text);white-space:pre}
+  .kw{color:var(--blue)}
+  .fn{color:var(--amber)}
+  .cm{color:#636e8a;font-style:italic}
+  .st{color:var(--green)}
+  .dc{color:var(--orange)}
+  .cp{position:absolute;top:8px;right:8px;font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--bg3);color:var(--muted);transition:all .15s}
+  .cp:hover{color:var(--text);border-color:var(--amber)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .two .block{margin-bottom:0}
+  table.cx{width:100%;border-collapse:collapse;font-size:12px}
+  table.cx th{text-align:left;color:var(--muted);padding:5px 8px;border-bottom:1px solid var(--border);font-size:11px}
+  table.cx td{padding:5px 8px;border-bottom:1px solid #1e2235;font-family:'Courier New',monospace;font-size:12px}
+  table.cx tr:last-child td{border-bottom:none}
+  table.cx td:first-child{color:var(--blue)}
+  table.cx td:nth-child(2){color:var(--green)}
+  .pf{display:flex;gap:8px;margin-bottom:8px}
+  .pi{color:var(--red);font-size:14px;flex-shrink:0}
+  .pt{font-size:12.5px;line-height:1.6;color:var(--text)}
+  .pt code{font-family:monospace;font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;color:var(--amber);border:1px solid var(--border)}
+  .tip-box{background:#1a2a1a;border:1px solid #2d5a2d;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#86efac;line-height:1.6}
+  .tip-box .tip-label{color:var(--green);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px}
+  .nr{grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)}
+  .card.expanded{grid-column:1/-1}
+  .card.mastered{opacity:0.6}
+  .mastery-lbl{cursor:pointer;display:flex;align-items:center}
+  .mastery-cb{width:14px;height:14px;accent-color:var(--green);cursor:pointer}
+  .block,.two{min-width:0}
+  #card-count{font-size:12px;color:var(--muted);white-space:nowrap}
+  #toggle-all{background:var(--bg3)}
+  @media(max-width:700px){main{grid-template-columns:1fr}.two{grid-template-columns:1fr}pre{font-size:11px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐍 Python — FAANG / Databricks Interview Reference</h1>
+  <div class="subtitle">Data structures · Algorithms · Patterns · Pythonic tricks · Complexity. Click any card to expand.</div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search... (e.g. heapq, defaultdict, BFS, sliding window)" />
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-cat="all">All</button>
+      <button class="tab" data-cat="ds">Data structures</button>
+      <button class="tab" data-cat="algo">Algorithms</button>
+      <button class="tab" data-cat="pat">Patterns</button>
+      <button class="tab" data-cat="py">Python tricks</button>
+      <button class="tab" data-cat="tip">Gotchas &amp; tips</button>
+      <button class="tab" data-cat="rec">Recursion</button>
+    </div>
+    <button id="toggle-all" class="tab">Expand All</button>
+    <span id="card-count"></span>
+  </div>
+</header>
+<main id="main">
+
+<!-- ===== DATA STRUCTURES ===== -->
+
+<div class="card" data-cat="ds" data-kw="list append pop insert remove sort reverse index slice comprehension stack queue">
+<div class="card-head" onclick="tog(this)"><span class="card-title">List — core operations</span><div class="card-meta"><span class="badge bg-g">O(1) append</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python lists are dynamic arrays. <strong>Appending/popping from the end is O(1)</strong>. Insert/remove at index i is O(n). Use as stack (append/pop), not as queue.</div>
+<div class="two">
+<div class="block"><div class="lbl">Core ops</div><button class="cp" onclick="c(this)">copy</button><pre>lst = []
+lst.append(x)          <span class="cm"># O(1)</span>
+lst.pop()              <span class="cm"># O(1) — from end</span>
+lst.pop(i)             <span class="cm"># O(n) — from index</span>
+lst.insert(i, x)       <span class="cm"># O(n)</span>
+lst.remove(x)          <span class="cm"># O(n) first match</span>
+lst.index(x)           <span class="cm"># O(n) first match</span>
+x <span class="kw">in</span> lst              <span class="cm"># O(n) linear scan</span>
+len(lst)               <span class="cm"># O(1)</span>
+lst.count(x)           <span class="cm"># O(n)</span>
+lst.reverse()          <span class="cm"># O(n) in-place</span>
+lst.sort()             <span class="cm"># O(n log n) Timsort</span></pre></div>
+<div class="block"><div class="lbl">Slicing &amp; tricks</div><button class="cp" onclick="c(this)">copy</button><pre>lst[i]                 <span class="cm"># O(1)</span>
+lst[-1]                <span class="cm"># last element</span>
+lst[a:b]               <span class="cm"># [a, b) — copy</span>
+lst[::2]               <span class="cm"># every 2nd element</span>
+lst[::-1]              <span class="cm"># reversed copy</span>
+lst[a:b] = [x,y]       <span class="cm"># splice</span>
+
+<span class="cm"># Init with default values</span>
+[<span class="dc">0</span>] * n
+[[<span class="dc">0</span>] * cols <span class="kw">for</span> _ <span class="kw">in</span> range(rows)]
+
+<span class="cm"># NEVER do [[0]*cols]*rows — same row!</span>
+
+lst.extend(other)      <span class="cm"># O(k)</span>
+a + b                  <span class="cm"># new list, O(n+m)</span></pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Sorting (key patterns)</div><button class="cp" onclick="c(this)">copy</button><pre>lst.sort()             <span class="cm"># in-place</span>
+sorted(lst)            <span class="cm"># returns new list</span>
+lst.sort(reverse=<span class="kw">True</span>)
+sorted(lst, key=<span class="kw">lambda</span> x: -x)
+
+<span class="cm"># Multi-key sort</span>
+sorted(words, key=<span class="kw">lambda</span> w: (len(w), w))
+
+<span class="cm"># Sort by second element of tuple</span>
+sorted(pairs, key=<span class="kw">lambda</span> p: p[<span class="dc">1</span>])
+
+<span class="cm"># Sort intervals by start</span>
+intervals.sort(key=<span class="kw">lambda</span> x: x[<span class="dc">0</span>])</pre></div>
+<div class="block"><div class="lbl">List comprehension</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Basic</span>
+[x**<span class="dc">2</span> <span class="kw">for</span> x <span class="kw">in</span> range(<span class="dc">10</span>)]
+
+<span class="cm"># With filter</span>
+[x <span class="kw">for</span> x <span class="kw">in</span> lst <span class="kw">if</span> x % <span class="dc">2</span> == <span class="dc">0</span>]
+
+<span class="cm"># Flatten 2D</span>
+[x <span class="kw">for</span> row <span class="kw">in</span> matrix <span class="kw">for</span> x <span class="kw">in</span> row]
+
+<span class="cm"># 2D grid</span>
+[[<span class="dc">0</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> range(m)]
+
+<span class="cm"># Conditional expression</span>
+[x <span class="kw">if</span> x > <span class="dc">0</span> <span class="kw">else</span> <span class="dc">0</span> <span class="kw">for</span> x <span class="kw">in</span> lst]</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="dict dictionary hashmap frequency defaultdict counter ordereddict get setdefault update items keys values">
+<div class="card-head" onclick="tog(this)"><span class="card-title">dict / defaultdict / Counter</span><div class="card-meta"><span class="badge bg-g">O(1) avg</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Most-used FAANG structure.</strong> Master <code>defaultdict</code> and <code>Counter</code> — they eliminate boilerplate and are faster in interviews.</div>
+<div class="two">
+<div class="block"><div class="lbl">dict core</div><button class="cp" onclick="c(this)">copy</button><pre>d = {}
+d[k] = v
+d.get(k)              <span class="cm"># None if absent</span>
+d.get(k, <span class="dc">0</span>)           <span class="cm"># default 0</span>
+d.setdefault(k, [])   <span class="cm"># init if missing</span>
+k <span class="kw">in</span> d                <span class="cm"># O(1)</span>
+<span class="kw">del</span> d[k]
+d.pop(k, <span class="kw">None</span>)        <span class="cm"># safe delete</span>
+len(d)
+
+<span class="cm"># Iteration</span>
+<span class="kw">for</span> k <span class="kw">in</span> d:            <span class="cm"># keys</span>
+<span class="kw">for</span> k, v <span class="kw">in</span> d.items(): <span class="cm"># key-value pairs</span>
+<span class="kw">for</span> v <span class="kw">in</span> d.values():</pre></div>
+<div class="block"><div class="lbl">defaultdict — no KeyError</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="cm"># Graph adjacency list</span>
+g = defaultdict(list)
+g[u].append(v)
+
+<span class="cm"># Frequency count</span>
+freq = defaultdict(<span class="fn">int</span>)
+freq[x] += <span class="dc">1</span>
+
+<span class="cm"># Group by</span>
+groups = defaultdict(list)
+<span class="kw">for</span> word <span class="kw">in</span> words:
+    groups[<span class="fn">len</span>(word)].append(word)
+
+<span class="cm"># Nested default</span>
+d = defaultdict(<span class="kw">lambda</span>: defaultdict(<span class="fn">int</span>))</pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Counter</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> Counter
+
+c = Counter(<span class="st">"aabbcc"</span>)   <span class="cm"># {'a':2,'b':2,'c':2}</span>
+c = Counter([<span class="dc">1</span>,<span class="dc">2</span>,<span class="dc">2</span>,<span class="dc">3</span>])
+
+c[x]                   <span class="cm"># 0 if absent (no error)</span>
+c.most_common(<span class="dc">3</span>)       <span class="cm"># top 3 [(val, cnt)]</span>
+c.most_common()[:<span class="dc">-2</span>:-<span class="dc">1</span>] <span class="cm"># least common</span>
+
+<span class="cm"># Arithmetic</span>
+c1 + c2                <span class="cm"># union (sum)</span>
+c1 - c2                <span class="cm"># difference (≥0 only)</span>
+c1 & c2                <span class="cm"># intersection (min)</span>
+c1 | c2                <span class="cm"># union (max)</span>
+<span class="fn">sum</span>(c.values())        <span class="cm"># total count</span>
+<span class="fn">list</span>(c.elements())     <span class="cm"># expand back</span></pre></div>
+<div class="block"><div class="lbl">OrderedDict / dict comprehension</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> OrderedDict
+
+<span class="cm"># LRU Cache pattern</span>
+cache = OrderedDict()
+cache.move_to_end(k)         <span class="cm"># to back</span>
+cache.move_to_end(k, last=<span class="kw">False</span>) <span class="cm"># to front</span>
+cache.popitem(last=<span class="kw">False</span>)   <span class="cm"># pop front (LRU)</span>
+
+<span class="cm"># Dict comprehension</span>
+{k: v <span class="kw">for</span> k, v <span class="kw">in</span> pairs}
+{x: x**<span class="dc">2</span> <span class="kw">for</span> x <span class="kw">in</span> range(<span class="dc">5</span>)}
+{k: v <span class="kw">for</span> k, v <span class="kw">in</span> d.items() <span class="kw">if</span> v > <span class="dc">0</span>}
+
+<span class="cm"># Merge dicts (Python 3.9+)</span>
+merged = d1 | d2
+d1 |= d2                     <span class="cm"># in-place</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="set frozenset union intersection difference contains add remove discard">
+<div class="card-head" onclick="tog(this)"><span class="card-title">set &amp; frozenset</span><div class="card-meta"><span class="badge bg-g">O(1) avg</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Sets use hash tables — O(1) add/remove/contains. Use for deduplication, visited tracking, and fast membership tests.</div>
+<div class="two">
+<div class="block"><div class="lbl">Core ops</div><button class="cp" onclick="c(this)">copy</button><pre>s = set()
+s = {<span class="dc">1</span>, <span class="dc">2</span>, <span class="dc">3</span>}
+s = <span class="fn">set</span>(lst)          <span class="cm"># from list</span>
+
+s.add(x)              <span class="cm"># O(1)</span>
+s.remove(x)           <span class="cm"># KeyError if absent</span>
+s.discard(x)          <span class="cm"># safe remove</span>
+s.pop()               <span class="cm"># arbitrary element</span>
+x <span class="kw">in</span> s                <span class="cm"># O(1) — use over list!</span>
+<span class="fn">len</span>(s)
+
+<span class="cm"># Set comprehension</span>
+{x % <span class="dc">10</span> <span class="kw">for</span> x <span class="kw">in</span> nums}</pre></div>
+<div class="block"><div class="lbl">Set operations</div><button class="cp" onclick="c(this)">copy</button><pre>a | b                 <span class="cm"># union</span>
+a & b                 <span class="cm"># intersection</span>
+a - b                 <span class="cm"># difference</span>
+a ^ b                 <span class="cm"># symmetric diff</span>
+a.issubset(b)         <span class="cm"># a <= b</span>
+a.issuperset(b)       <span class="cm"># a >= b</span>
+a.isdisjoint(b)       <span class="cm"># no overlap</span>
+
+<span class="cm"># frozenset — hashable (use as dict key)</span>
+fs = <span class="fn">frozenset</span>([<span class="dc">1</span>,<span class="dc">2</span>,<span class="dc">3</span>])
+d[fs] = <span class="st">"value"</span>       <span class="cm"># valid!</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="deque collections queue stack rotate appendleft popleft BFS">
+<div class="card-head" onclick="tog(this)"><span class="card-title">collections.deque</span><div class="card-meta"><span class="badge bg-g">O(1) both ends</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Prefer deque over list as a queue.</strong> <code>list.pop(0)</code> is O(n). <code>deque.popleft()</code> is O(1). Essential for BFS.</div>
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+dq = deque()
+dq = deque([<span class="dc">1</span>,<span class="dc">2</span>,<span class="dc">3</span>])
+dq = deque(maxlen=<span class="dc">3</span>)   <span class="cm"># fixed-size ring buffer</span>
+
+dq.append(x)           <span class="cm"># O(1) right</span>
+dq.appendleft(x)       <span class="cm"># O(1) left</span>
+dq.pop()               <span class="cm"># O(1) right</span>
+dq.popleft()           <span class="cm"># O(1) left — use for BFS!</span>
+dq[<span class="dc">0</span>]                  <span class="cm"># peek left, O(1)</span>
+dq[-<span class="dc">1</span>]                 <span class="cm"># peek right, O(1)</span>
+dq.rotate(<span class="dc">1</span>)           <span class="cm"># rotate right by 1</span>
+dq.extend([<span class="dc">4</span>,<span class="dc">5</span>])       <span class="cm"># O(k) right</span>
+dq.extendleft([<span class="dc">4</span>,<span class="dc">5</span>])   <span class="cm"># O(k) left (reversed!)</span>
+<span class="fn">len</span>(dq)
+
+<span class="cm"># BFS template</span>
+q = deque([start])
+<span class="kw">while</span> q:
+    node = q.popleft()
+    <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
+        q.append(nei)</pre></div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="heapq heap minheap maxheap priority queue nlargest nsmallest top k">
+<div class="card-head" onclick="tog(this)"><span class="card-title">heapq (min-heap)</span><div class="card-meta"><span class="badge bg-a">O(log n) push/pop</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python's <code>heapq</code> is a <strong>min-heap only</strong>. For max-heap: negate values. For custom objects: use tuples <code>(priority, item)</code>.</div>
+<div class="two">
+<div class="block"><div class="lbl">Min-heap</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> heapq
+
+h = []
+heapq.heappush(h, x)       <span class="cm"># O(log n)</span>
+heapq.heappop(h)           <span class="cm"># O(log n) min</span>
+h[<span class="dc">0</span>]                       <span class="cm"># O(1) peek min</span>
+heapq.heapify(lst)         <span class="cm"># O(n) in-place!</span>
+heapq.heappushpop(h, x)    <span class="cm"># push then pop</span>
+heapq.heapreplace(h, x)    <span class="cm"># pop then push</span>
+
+heapq.nlargest(k, lst)     <span class="cm"># O(n log k)</span>
+heapq.nsmallest(k, lst)    <span class="cm"># O(n log k)</span></pre></div>
+<div class="block"><div class="lbl">Max-heap (negate)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Max-heap: negate all values</span>
+heapq.heappush(h, -x)
+val = -heapq.heappop(h)
+
+<span class="cm"># Custom: (priority, item)</span>
+heapq.heappush(h, (dist, node))
+dist, node = heapq.heappop(h)
+
+<span class="cm"># Tie-break: (priority, idx, item)</span>
+<span class="cm"># Python compares tuples lexicographically</span>
+<span class="kw">import</span> itertools
+counter = itertools.count()
+heapq.heappush(h, (pri, <span class="fn">next</span>(counter), item))</pre></div>
+</div>
+<div class="block"><div class="lbl">Top K patterns</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># K largest — keep min-heap of size K</span>
+h = []
+<span class="kw">for</span> n <span class="kw">in</span> nums:
+    heapq.heappush(h, n)
+    <span class="kw">if</span> <span class="fn">len</span>(h) > k:
+        heapq.heappop(h)
+<span class="cm"># h[0] = kth largest</span>
+
+<span class="cm"># K most frequent (Counter + heap)</span>
+cnt = Counter(nums)
+<span class="kw">return</span> heapq.nlargest(k, cnt.keys(), key=cnt.get)</pre></div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="trie prefix tree insert search startswith word autocomplete">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Trie (prefix tree)</span><div class="card-meta"><span class="badge bg-b">O(m) per op</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Build from scratch in interviews. Use dict of dicts (Pythonic) or TrieNode class. Used for: autocomplete, word search, prefix matching.</div>
+<div class="two">
+<div class="block"><div class="lbl">Dict-of-dicts (concise)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Trie as nested defaultdicts</span>
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="kw">def</span> <span class="fn">make_trie</span>():
+    <span class="kw">return</span> defaultdict(make_trie)
+
+trie = make_trie()
+END = <span class="st">"#"</span>
+
+<span class="kw">def</span> <span class="fn">insert</span>(word):
+    node = trie
+    <span class="kw">for</span> c <span class="kw">in</span> word:
+        node = node[c]
+    node[END] = <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">search</span>(word):
+    node = trie
+    <span class="kw">for</span> c <span class="kw">in</span> word:
+        <span class="kw">if</span> c <span class="kw">not in</span> node: <span class="kw">return False</span>
+        node = node[c]
+    <span class="kw">return</span> END <span class="kw">in</span> node</pre></div>
+<div class="block"><div class="lbl">TrieNode class</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.children = {}
+        self.is_end = <span class="kw">False</span>
+
+<span class="kw">class</span> <span class="fn">Trie</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.root = TrieNode()
+
+    <span class="kw">def</span> <span class="fn">insert</span>(self, word):
+        n = self.root
+        <span class="kw">for</span> c <span class="kw">in</span> word:
+            <span class="kw">if</span> c <span class="kw">not in</span> n.children:
+                n.children[c] = TrieNode()
+            n = n.children[c]
+        n.is_end = <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">search</span>(self, word):
+        n = self._find(word)
+        <span class="kw">return</span> n <span class="kw">is not None and</span> n.is_end
+
+    <span class="kw">def</span> <span class="fn">_find</span>(self, prefix):
+        n = self.root
+        <span class="kw">for</span> c <span class="kw">in</span> prefix:
+            <span class="kw">if</span> c <span class="kw">not in</span> n.children:
+                <span class="kw">return None</span>
+            n = n.children[c]
+        <span class="kw">return</span> n</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="ds" data-kw="linked list reverse merge sorted remove nth dummy head two pointer iterative prev curr next">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Linked list operations</span><div class="card-meta"><span class="badge bg-g">O(n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Dummy head simplifies edge cases.</strong> Most linked list problems use two-pointer or prev/curr/next manipulation. Always handle head = None.</div>
+<div class="two">
+<div class="block"><div class="lbl">Reverse (iterative)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">reverseList</span>(head):
+    prev, curr = <span class="kw">None</span>, head
+    <span class="kw">while</span> curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    <span class="kw">return</span> prev</pre></div>
+<div class="block"><div class="lbl">Merge two sorted lists</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">mergeTwoLists</span>(l1, l2):
+    dummy = curr = ListNode(<span class="dc">0</span>)
+    <span class="kw">while</span> l1 <span class="kw">and</span> l2:
+        <span class="kw">if</span> l1.val &lt;= l2.val:
+            curr.next = l1; l1 = l1.next
+        <span class="kw">else</span>:
+            curr.next = l2; l2 = l2.next
+        curr = curr.next
+    curr.next = l1 <span class="kw">or</span> l2
+    <span class="kw">return</span> dummy.next</pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Remove Nth from end</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Two-pointer gap of n</span>
+<span class="kw">def</span> <span class="fn">removeNthFromEnd</span>(head, n):
+    dummy = ListNode(<span class="dc">0</span>, head)
+    fast = slow = dummy
+    <span class="kw">for</span> _ <span class="kw">in</span> range(n + <span class="dc">1</span>):
+        fast = fast.next
+    <span class="kw">while</span> fast:
+        fast = fast.next
+        slow = slow.next
+    slow.next = slow.next.next
+    <span class="kw">return</span> dummy.next</pre></div>
+<div class="block"><div class="lbl">Dummy head pattern</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Use dummy to avoid special-casing head</span>
+dummy = ListNode(<span class="dc">0</span>)
+dummy.next = head
+curr = dummy
+
+<span class="cm"># Delete all nodes with val == target</span>
+<span class="kw">while</span> curr.next:
+    <span class="kw">if</span> curr.next.val == target:
+        curr.next = curr.next.next
+    <span class="kw">else</span>:
+        curr = curr.next
+<span class="kw">return</span> dummy.next</pre></div>
+</div>
+</div></div>
+
+<!-- ===== ALGORITHMS ===== -->
+
+<div class="card" data-cat="algo" data-kw="binary search bisect sorted left right mid boundary answer space sorted">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Binary search &amp; bisect</span><div class="card-meta"><span class="badge bg-g">O(log n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Use Python's <code>bisect</code> module for sorted arrays. Roll your own for "binary search on answer" problems.</div>
+<div class="two">
+<div class="block"><div class="lbl">bisect module</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> bisect
+
+<span class="cm"># bisect_left: first pos where a[i] >= x</span>
+i = bisect.bisect_left(a, x)
+
+<span class="cm"># bisect_right: first pos where a[i] > x</span>
+i = bisect.bisect_right(a, x)
+
+<span class="cm"># Check if x exists</span>
+i = bisect.bisect_left(a, x)
+found = i &lt; <span class="fn">len</span>(a) <span class="kw">and</span> a[i] == x
+
+<span class="cm"># Insert keeping sorted order</span>
+bisect.insort_left(a, x)
+bisect.insort_right(a, x)
+
+<span class="cm"># Count elements < x</span>
+<span class="fn">print</span>(bisect.bisect_left(a, x))  <span class="cm"># = count</span></pre></div>
+<div class="block"><div class="lbl">Manual template</div><button class="cp" onclick="c(this)">copy</button><pre>lo, hi = <span class="dc">0</span>, <span class="fn">len</span>(nums) - <span class="dc">1</span>
+<span class="kw">while</span> lo &lt;= hi:
+    mid = (lo + hi) // <span class="dc">2</span>
+    <span class="kw">if</span> nums[mid] == target:
+        <span class="kw">return</span> mid
+    <span class="kw">elif</span> nums[mid] &lt; target:
+        lo = mid + <span class="dc">1</span>
+    <span class="kw">else</span>:
+        hi = mid - <span class="dc">1</span>
+<span class="kw">return</span> -<span class="dc">1</span>
+
+<span class="cm"># Note: no overflow risk in Python!</span>
+<span class="cm"># (lo + hi) // 2 is safe</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Binary search on answer (most powerful)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># "Find min X such that condition(X) is true"</span>
+<span class="cm"># Used in: Koko bananas, ship packages, split array largest sum</span>
+lo, hi = min_val, max_val
+<span class="kw">while</span> lo &lt; hi:
+    mid = (lo + hi) // <span class="dc">2</span>
+    <span class="kw">if</span> condition(mid):
+        hi = mid
+    <span class="kw">else</span>:
+        lo = mid + <span class="dc">1</span>
+<span class="kw">return</span> lo
+
+<span class="cm"># Tip: for "max X where condition", flip and return lo-1</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="algo" data-kw="tree traversal inorder preorder postorder level order bfs dfs recursive iterative binary search tree">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Tree traversals</span><div class="card-meta"><span class="badge bg-g">O(n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">DFS recursive</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Inorder: L→Root→R → sorted BST</span>
+<span class="kw">def</span> <span class="fn">inorder</span>(node):
+    <span class="kw">if not</span> node: <span class="kw">return</span>
+    inorder(node.left)
+    process(node)       <span class="cm"># ← here</span>
+    inorder(node.right)
+
+<span class="cm"># Preorder: Root→L→R → copy/serialize</span>
+<span class="cm"># Postorder: L→R→Root → heights/delete</span>
+
+<span class="cm"># DFS returning a value (height example)</span>
+<span class="kw">def</span> <span class="fn">height</span>(node):
+    <span class="kw">if not</span> node: <span class="kw">return</span> <span class="dc">0</span>
+    <span class="kw">return</span> <span class="dc">1</span> + <span class="fn">max</span>(height(node.left),
+                    height(node.right))</pre></div>
+<div class="block"><div class="lbl">Iterative inorder</div><button class="cp" onclick="c(this)">copy</button><pre>stack, cur = [], root
+<span class="kw">while</span> stack <span class="kw">or</span> cur:
+    <span class="kw">while</span> cur:
+        stack.append(cur)
+        cur = cur.left
+    cur = stack.pop()
+    process(cur)
+    cur = cur.right</pre></div>
+</div>
+<div class="block"><div class="lbl">BFS — level order (snapshot level size)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+q = deque([root])
+<span class="kw">while</span> q:
+    <span class="kw">for</span> _ <span class="kw">in</span> range(<span class="fn">len</span>(q)):   <span class="cm"># snapshot = 1 level</span>
+        node = q.popleft()
+        <span class="kw">if</span> node.left:  q.append(node.left)
+        <span class="kw">if</span> node.right: q.append(node.right)</pre></div>
+</div></div>
+
+<div class="card" data-cat="algo" data-kw="graph bfs dfs grid visited topological sort cycle detection kahn directed undirected islands flood fill">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Graph — BFS / DFS / Topological sort</span><div class="card-meta"><span class="badge bg-g">O(V+E)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">BFS (shortest path)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+visited = {start}
+q = deque([(start, <span class="dc">0</span>)])     <span class="cm"># (node, dist)</span>
+<span class="kw">while</span> q:
+    node, d = q.popleft()
+    <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
+        <span class="kw">if</span> nei <span class="kw">not in</span> visited:
+            visited.add(nei)
+            q.append((nei, d+<span class="dc">1</span>))</pre></div>
+<div class="block"><div class="lbl">DFS (recursive)</div><button class="cp" onclick="c(this)">copy</button><pre">visited = <span class="fn">set</span>()
+<span class="kw">def</span> <span class="fn">dfs</span>(node):
+    visited.add(node)
+    <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
+        <span class="kw">if</span> nei <span class="kw">not in</span> visited:
+            dfs(nei)
+
+<span class="cm"># Iterative DFS (avoids recursion limit)</span>
+stack = [start]; visited = {start}
+<span class="kw">while</span> stack:
+    node = stack.pop()
+    <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
+        <span class="kw">if</span> nei <span class="kw">not in</span> visited:
+            visited.add(nei); stack.append(nei)</pre></div>
+</div>
+<div class="block"><div class="lbl">Grid DFS — 4 directions</div><button class="cp" onclick="c(this)">copy</button><pre>dirs = [(0,1),(0,-1),(1,0),(-1,0)]
+<span class="kw">def</span> <span class="fn">dfs</span>(r, c):
+    grid[r][c] = <span class="dc">0</span>              <span class="cm"># mark visited in-place</span>
+    <span class="kw">for</span> dr, dc <span class="kw">in</span> dirs:
+        nr, nc = r+dr, c+dc
+        <span class="kw">if</span> <span class="dc">0</span> &lt;= nr &lt; rows <span class="kw">and</span> <span class="dc">0</span> &lt;= nc &lt; cols \
+           <span class="kw">and</span> grid[nr][nc] == <span class="dc">1</span>:
+            dfs(nr, nc)</pre></div>
+<div class="block"><div class="lbl">Topological sort — Kahn's BFS</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque
+
+indegree = [<span class="dc">0</span>] * n
+adj = defaultdict(list)
+<span class="kw">for</span> u, v <span class="kw">in</span> edges:
+    adj[u].append(v); indegree[v] += <span class="dc">1</span>
+
+q = deque(i <span class="kw">for</span> i <span class="kw">in</span> range(n) <span class="kw">if</span> indegree[i]==<span class="dc">0</span>)
+order = []
+<span class="kw">while</span> q:
+    u = q.popleft(); order.append(u)
+    <span class="kw">for</span> v <span class="kw">in</span> adj[u]:
+        indegree[v] -= <span class="dc">1</span>
+        <span class="kw">if</span> indegree[v] == <span class="dc">0</span>: q.append(v)
+<span class="cm"># len(order) != n → cycle exists</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="algo" data-kw="dijkstra shortest path weighted graph priority queue">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Dijkstra's shortest path</span><div class="card-meta"><span class="badge bg-a">O((V+E) log V)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Use for <strong>weighted graphs with non-negative edges</strong>. Use BFS for unweighted. The lazy-deletion version below is simplest to write in interviews.</div>
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> heapq
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="kw">def</span> <span class="fn">dijkstra</span>(graph, src, n):
+    <span class="cm"># graph[u] = [(weight, v), ...]</span>
+    dist = [<span class="fn">float</span>(<span class="st">'inf'</span>)] * n
+    dist[src] = <span class="dc">0</span>
+    heap = [(<span class="dc">0</span>, src)]        <span class="cm"># (dist, node)</span>
+
+    <span class="kw">while</span> heap:
+        d, u = heapq.heappop(heap)
+        <span class="kw">if</span> d > dist[u]: <span class="kw">continue</span>  <span class="cm"># lazy delete</span>
+        <span class="kw">for</span> w, v <span class="kw">in</span> graph[u]:
+            <span class="kw">if</span> dist[u] + w &lt; dist[v]:
+                dist[v] = dist[u] + w
+                heapq.heappush(heap, (dist[v], v))
+    <span class="kw">return</span> dist</pre></div>
+</div></div>
+
+<div class="card" data-cat="algo" data-kw="union find disjoint set path compression rank connected components cycle">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Union Find</span><div class="card-meta"><span class="badge bg-g">O(α(n)) ≈ O(1)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Always include path compression + union by rank. Used for: connected components, cycle detection, minimum spanning tree.</div>
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">UnionFind</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n):
+        self.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        self.rank = [<span class="dc">0</span>] * n
+        self.components = n
+
+    <span class="kw">def</span> <span class="fn">find</span>(self, x):            <span class="cm"># path compression</span>
+        <span class="kw">if</span> self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        <span class="kw">return</span> self.parent[x]
+
+    <span class="kw">def</span> <span class="fn">union</span>(self, a, b):       <span class="cm"># union by rank</span>
+        pa, pb = self.find(a), self.find(b)
+        <span class="kw">if</span> pa == pb: <span class="kw">return False</span>
+        <span class="kw">if</span> self.rank[pa] &lt; self.rank[pb]:
+            pa, pb = pb, pa
+        self.parent[pb] = pa
+        <span class="kw">if</span> self.rank[pa] == self.rank[pb]:
+            self.rank[pa] += <span class="dc">1</span>
+        self.components -= <span class="dc">1</span>
+        <span class="kw">return True</span>
+
+    <span class="kw">def</span> <span class="fn">connected</span>(self, a, b):
+        <span class="kw">return</span> self.find(a) == self.find(b)</pre></div>
+</div></div>
+
+<!-- ===== PATTERNS ===== -->
+
+<div class="card" data-cat="pat" data-kw="sliding window two pointer variable fixed max min substring valid expand shrink">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Sliding window &amp; two pointers</span><div class="card-meta"><span class="badge bg-g">O(n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">Variable window</div><button class="cp" onclick="c(this)">copy</button><pre>left = res = <span class="dc">0</span>
+<span class="kw">for</span> right <span class="kw">in</span> range(<span class="fn">len</span>(s)):
+    <span class="cm"># expand: include s[right]</span>
+    <span class="kw">while</span> invalid_condition:
+        <span class="cm"># shrink: remove s[left]</span>
+        left += <span class="dc">1</span>
+    res = <span class="fn">max</span>(res, right - left + <span class="dc">1</span>)
+<span class="kw">return</span> res</pre></div>
+<div class="block"><div class="lbl">Fixed window</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Max sum of subarray size k</span>
+curr = <span class="fn">sum</span>(nums[:k]); res = curr
+<span class="kw">for</span> i <span class="kw">in</span> range(k, <span class="fn">len</span>(nums)):
+    curr += nums[i] - nums[i-k]
+    res = <span class="fn">max</span>(res, curr)
+<span class="kw">return</span> res</pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Two pointers (sorted)</div><button class="cp" onclick="c(this)">copy</button><pre>l, r = <span class="dc">0</span>, <span class="fn">len</span>(nums) - <span class="dc">1</span>
+<span class="kw">while</span> l &lt; r:
+    s = nums[l] + nums[r]
+    <span class="kw">if</span> s == target:
+        l += <span class="dc">1</span>; r -= <span class="dc">1</span>
+    <span class="kw">elif</span> s &lt; target:
+        l += <span class="dc">1</span>
+    <span class="kw">else</span>:
+        r -= <span class="dc">1</span></pre></div>
+<div class="block"><div class="lbl">Char frequency window</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Longest substring with at most k distinct</span>
+freq = defaultdict(<span class="fn">int</span>)
+left = res = <span class="dc">0</span>
+<span class="kw">for</span> right, c <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+    freq[c] += <span class="dc">1</span>
+    <span class="kw">while</span> <span class="fn">len</span>(freq) > k:
+        freq[s[left]] -= <span class="dc">1</span>
+        <span class="kw">if</span> freq[s[left]] == <span class="dc">0</span>:
+            <span class="kw">del</span> freq[s[left]]
+        left += <span class="dc">1</span>
+    res = <span class="fn">max</span>(res, right - left + <span class="dc">1</span>)</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="backtracking permutation combination subset recursion choose explore unchoose pruning dedupe">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Backtracking</span><div class="card-meta"><span class="badge bg-r">O(n!) worst</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Pattern:</strong> choose → explore → unchoose. In Python, <code>path[:]</code> or <code>list(path)</code> makes a copy. Sort input first for deduplication.</div>
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre>res = []
+<span class="kw">def</span> <span class="fn">bt</span>(start, path):
+    <span class="kw">if</span> base_case:
+        res.append(path[:])   <span class="cm"># copy! not path</span>
+        <span class="kw">return</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(start, <span class="fn">len</span>(nums)):
+        <span class="kw">if</span> skip_condition: <span class="kw">continue</span>
+        path.append(nums[i])  <span class="cm"># choose</span>
+        bt(i + <span class="dc">1</span>, path)       <span class="cm"># explore</span>
+        path.pop()            <span class="cm"># unchoose</span>
+
+<span class="cm"># Permutations: use visited set, pass start=0</span>
+<span class="cm"># Combinations: pass start=i+1</span>
+<span class="cm"># Subsets: add path[:] at every level, no base case</span>
+<span class="cm"># Dedupe: nums.sort(); skip if i>start and nums[i]==nums[i-1]</span>
+
+<span class="cm"># N-Queens style: pass state, not index</span>
+<span class="kw">def</span> <span class="fn">bt</span>(row, cols, diag1, diag2):
+    <span class="kw">if</span> row == n: res.append(build()); <span class="kw">return</span>
+    <span class="kw">for</span> col <span class="kw">in</span> range(n):
+        <span class="kw">if</span> col <span class="kw">in</span> cols <span class="kw">or</span> row-col <span class="kw">in</span> diag1 \
+           <span class="kw">or</span> row+col <span class="kw">in</span> diag2: <span class="kw">continue</span>
+        bt(row+<span class="dc">1</span>, cols|{col}, diag1|{row-col}, diag2|{row+col})</pre></div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="monotonic stack next greater smaller element temperature histogram decreasing increasing deque">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Monotonic stack</span><div class="card-meta"><span class="badge bg-g">O(n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Used for: next greater/smaller element, daily temperatures, largest rectangle in histogram, trapping rain water. Each element pushed/popped once → O(n).</div>
+<div class="two">
+<div class="block"><div class="lbl">Next greater (decreasing)</div><button class="cp" onclick="c(this)">copy</button><pre>res = [-<span class="dc">1</span>] * <span class="fn">len</span>(nums)
+stack = []   <span class="cm"># stores indices</span>
+<span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+    <span class="kw">while</span> stack <span class="kw">and</span> nums[stack[-<span class="dc">1</span>]] &lt; x:
+        res[stack.pop()] = x
+    stack.append(i)</pre></div>
+<div class="block"><div class="lbl">Next smaller (increasing)</div><button class="cp" onclick="c(this)">copy</button><pre>res = [-<span class="dc">1</span>] * <span class="fn">len</span>(nums)
+stack = []
+<span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+    <span class="kw">while</span> stack <span class="kw">and</span> nums[stack[-<span class="dc">1</span>]] > x:
+        res[stack.pop()] = x
+    stack.append(i)</pre></div>
+</div>
+<div class="block"><div class="lbl">Sliding window maximum (monotonic deque)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Max element in every window of size k — O(n)</span>
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+dq, res = deque(), []
+<span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+    <span class="kw">while</span> dq <span class="kw">and</span> nums[dq[-<span class="dc">1</span>]] &lt;= x:
+        dq.pop()
+    dq.append(i)
+    <span class="kw">if</span> dq[<span class="dc">0</span>] == i - k: dq.popleft() <span class="cm"># out of window</span>
+    <span class="kw">if</span> i >= k - <span class="dc">1</span>: res.append(nums[dq[<span class="dc">0</span>]])</pre></div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="dynamic programming dp memoization functools lru_cache kadane prefix sum knapsack lcs coin change">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Dynamic programming patterns</span><div class="card-meta"><span class="badge bg-a">varies</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">Memoization with lru_cache</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="cm"># Python's easiest memoization</span>
+@lru_cache(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">dp</span>(i, j):
+    <span class="kw">if</span> base_case: <span class="kw">return</span> base_val
+    <span class="kw">return</span> recurrence(dp(i-<span class="dc">1</span>, j), dp(i, j-<span class="dc">1</span>))
+
+<span class="cm"># Or use @cache (Python 3.9+, same as lru_cache(None))</span>
+<span class="kw">from</span> functools <span class="kw">import</span> cache
+@cache
+<span class="kw">def</span> <span class="fn">dp</span>(i, j): ...</pre></div>
+<div class="block"><div class="lbl">Kadane's (max subarray)</div><button class="cp" onclick="c(this)">copy</button><pre>cur = best = nums[<span class="dc">0</span>]
+<span class="kw">for</span> n <span class="kw">in</span> nums[<span class="dc">1</span>:]:
+    cur = <span class="fn">max</span>(n, cur + n)
+    best = <span class="fn">max</span>(best, cur)
+<span class="kw">return</span> best</pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Prefix sum</div><button class="cp" onclick="c(this)">copy</button><pre>pre = [<span class="dc">0</span>] + list(itertools.accumulate(nums))
+<span class="cm"># or manual:</span>
+pre = [<span class="dc">0</span>] * (<span class="fn">len</span>(nums) + <span class="dc">1</span>)
+<span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+    pre[i+<span class="dc">1</span>] = pre[i] + x
+<span class="cm"># Range sum [l, r] in O(1):</span>
+s = pre[r+<span class="dc">1</span>] - pre[l]
+
+<span class="cm"># Subarray sum = k → use dict</span>
+count = defaultdict(<span class="fn">int</span>); count[<span class="dc">0</span>] = <span class="dc">1</span>
+<span class="kw">for</span> pre_sum:
+    ans += count[pre_sum - k]
+    count[pre_sum] += <span class="dc">1</span></pre></div>
+<div class="block"><div class="lbl">0/1 Knapsack</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># dp[w] = max value with capacity w</span>
+dp = [<span class="dc">0</span>] * (W + <span class="dc">1</span>)
+<span class="kw">for</span> wt, val <span class="kw">in</span> items:
+    <span class="kw">for</span> w <span class="kw">in</span> range(W, wt - <span class="dc">1</span>, -<span class="dc">1</span>): <span class="cm"># reverse!</span>
+        dp[w] = <span class="fn">max</span>(dp[w], dp[w-wt] + val)
+<span class="kw">return</span> dp[W]
+
+<span class="cm"># Coin change (unbounded — iterate forward)</span>
+dp = [<span class="fn">float</span>(<span class="st">'inf'</span>)] * (amount + <span class="dc">1</span>); dp[<span class="dc">0</span>] = <span class="dc">0</span>
+<span class="kw">for</span> coin <span class="kw">in</span> coins:
+    <span class="kw">for</span> w <span class="kw">in</span> range(coin, amount + <span class="dc">1</span>): <span class="cm"># forward!</span>
+        dp[w] = <span class="fn">min</span>(dp[w], dp[w-coin] + <span class="dc">1</span>)</pre></div>
+</div>
+<div class="block"><div class="lbl">2D DP — LCS / edit distance</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># LCS</span>
+dp = [[<span class="dc">0</span>]*(n+<span class="dc">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> range(m+<span class="dc">1</span>)]
+<span class="kw">for</span> i <span class="kw">in</span> range(<span class="dc">1</span>, m+<span class="dc">1</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> range(<span class="dc">1</span>, n+<span class="dc">1</span>):
+        <span class="kw">if</span> a[i-<span class="dc">1</span>] == b[j-<span class="dc">1</span>]:
+            dp[i][j] = dp[i-<span class="dc">1</span>][j-<span class="dc">1</span>] + <span class="dc">1</span>
+        <span class="kw">else</span>:
+            dp[i][j] = <span class="fn">max</span>(dp[i-<span class="dc">1</span>][j], dp[i][j-<span class="dc">1</span>])</pre></div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="floyd cycle detection slow fast pointer linked list tortoise hare duplicate">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Floyd's cycle detection</span><div class="card-meta"><span class="badge bg-g">O(n) · O(1) space</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Phase 1: detect meeting point</span>
+slow = fast = head
+<span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+    slow = slow.next
+    fast = fast.next.next
+    <span class="kw">if</span> slow == fast: <span class="kw">break</span>
+<span class="kw">else</span>:
+    <span class="kw">return None</span>   <span class="cm"># no cycle</span>
+
+<span class="cm"># Phase 2: find cycle entry</span>
+slow = head
+<span class="kw">while</span> slow != fast:
+    slow = slow.next
+    fast = fast.next
+<span class="kw">return</span> slow   <span class="cm"># entry node</span>
+
+<span class="cm"># Find middle of linked list (slow pointer)</span>
+slow = fast = head
+<span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+    slow = slow.next; fast = fast.next.next
+<span class="cm"># slow = middle (for even-length, second middle)</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="intervals merge overlapping insert meeting rooms min heap sort sweep line">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Interval patterns</span><div class="card-meta"><span class="badge bg-g">O(n log n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Always sort by start time first.</strong> Then scan left→right, merging or comparing with the previous interval. Meeting rooms II uses a min-heap for concurrent rooms.</div>
+<div class="two">
+<div class="block"><div class="lbl">Merge overlapping intervals</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">merge</span>(intervals):
+    intervals.sort(key=<span class="kw">lambda</span> x: x[<span class="dc">0</span>])
+    res = [intervals[<span class="dc">0</span>]]
+    <span class="kw">for</span> s, e <span class="kw">in</span> intervals[<span class="dc">1</span>:]:
+        <span class="kw">if</span> s &lt;= res[-<span class="dc">1</span>][<span class="dc">1</span>]:   <span class="cm"># overlap</span>
+            res[-<span class="dc">1</span>][<span class="dc">1</span>] = <span class="fn">max</span>(res[-<span class="dc">1</span>][<span class="dc">1</span>], e)
+        <span class="kw">else</span>:
+            res.append([s, e])
+    <span class="kw">return</span> res</pre></div>
+<div class="block"><div class="lbl">Insert interval</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">insert</span>(intervals, new):
+    res, i = [], <span class="dc">0</span>
+    <span class="cm"># Add all before new</span>
+    <span class="kw">while</span> i &lt; <span class="fn">len</span>(intervals) \
+          <span class="kw">and</span> intervals[i][<span class="dc">1</span>] &lt; new[<span class="dc">0</span>]:
+        res.append(intervals[i]); i += <span class="dc">1</span>
+    <span class="cm"># Merge overlapping with new</span>
+    <span class="kw">while</span> i &lt; <span class="fn">len</span>(intervals) \
+          <span class="kw">and</span> intervals[i][<span class="dc">0</span>] &lt;= new[<span class="dc">1</span>]:
+        new = [<span class="fn">min</span>(new[<span class="dc">0</span>], intervals[i][<span class="dc">0</span>]),
+               <span class="fn">max</span>(new[<span class="dc">1</span>], intervals[i][<span class="dc">1</span>])]
+        i += <span class="dc">1</span>
+    res.append(new)
+    <span class="kw">return</span> res + intervals[i:]</pre></div>
+</div>
+<div class="block"><div class="lbl">Meeting rooms II (min-heap for end times)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">minMeetingRooms</span>(intervals):
+    intervals.sort(key=<span class="kw">lambda</span> x: x[<span class="dc">0</span>])
+    heap = []   <span class="cm"># end times of active meetings</span>
+    <span class="kw">for</span> s, e <span class="kw">in</span> intervals:
+        <span class="kw">if</span> heap <span class="kw">and</span> heap[<span class="dc">0</span>] &lt;= s:
+            heapq.heappop(heap)   <span class="cm"># reuse room</span>
+        heapq.heappush(heap, e)
+    <span class="kw">return</span> <span class="fn">len</span>(heap)             <span class="cm"># = max concurrent</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="greedy jump game gas station task scheduler partition labels local optimal">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Greedy algorithms</span><div class="card-meta"><span class="badge bg-a">varies</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Make the locally optimal choice at each step.</strong> Greedy works when local optimum leads to global optimum. Key insight: prove that skipping a greedy choice never helps.</div>
+<div class="two">
+<div class="block"><div class="lbl">Jump Game I &amp; II</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># I — can you reach the end?</span>
+<span class="kw">def</span> <span class="fn">canJump</span>(nums):
+    reach = <span class="dc">0</span>
+    <span class="kw">for</span> i, n <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        <span class="kw">if</span> i > reach: <span class="kw">return False</span>
+        reach = <span class="fn">max</span>(reach, i + n)
+    <span class="kw">return True</span>
+
+<span class="cm"># II — min jumps to reach end</span>
+<span class="kw">def</span> <span class="fn">jump</span>(nums):
+    jumps = end = farthest = <span class="dc">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="fn">len</span>(nums) - <span class="dc">1</span>):
+        farthest = <span class="fn">max</span>(farthest, i + nums[i])
+        <span class="kw">if</span> i == end:
+            jumps += <span class="dc">1</span>; end = farthest
+    <span class="kw">return</span> jumps</pre></div>
+<div class="block"><div class="lbl">Gas station (circular)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">canCompleteCircuit</span>(gas, cost):
+    <span class="kw">if</span> <span class="fn">sum</span>(gas) &lt; <span class="fn">sum</span>(cost):
+        <span class="kw">return</span> -<span class="dc">1</span>
+    start = tank = <span class="dc">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="fn">len</span>(gas)):
+        tank += gas[i] - cost[i]
+        <span class="kw">if</span> tank &lt; <span class="dc">0</span>:
+            start = i + <span class="dc">1</span>
+            tank = <span class="dc">0</span>
+    <span class="kw">return</span> start</pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Task scheduler</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">leastInterval</span>(tasks, n):
+    freq = Counter(tasks)
+    max_f = <span class="fn">max</span>(freq.values())
+    max_count = <span class="fn">sum</span>(
+        <span class="dc">1</span> <span class="kw">for</span> f <span class="kw">in</span> freq.values()
+        <span class="kw">if</span> f == max_f)
+    <span class="kw">return</span> <span class="fn">max</span>(<span class="fn">len</span>(tasks),
+        (max_f - <span class="dc">1</span>) * (n + <span class="dc">1</span>) + max_count)</pre></div>
+<div class="block"><div class="lbl">Partition labels</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">partitionLabels</span>(s):
+    last = {c: i <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(s)}
+    res, start, end = [], <span class="dc">0</span>, <span class="dc">0</span>
+    <span class="kw">for</span> i, c <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        end = <span class="fn">max</span>(end, last[c])
+        <span class="kw">if</span> i == end:
+            res.append(i - start + <span class="dc">1</span>)
+            start = i + <span class="dc">1</span>
+    <span class="kw">return</span> res</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="pat" data-kw="matrix spiral order rotate 90 degrees transpose search sorted 2d binary staircase boundary">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Matrix patterns</span><div class="card-meta"><span class="badge bg-b">O(m*n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Spiral order uses 4 shrinking boundaries.</strong> Rotate 90° = transpose + reverse rows. Sorted 2D search uses staircase from top-right.</div>
+<div class="two">
+<div class="block"><div class="lbl">Spiral order (4 boundaries)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">spiralOrder</span>(matrix):
+    res = []
+    top, bot = <span class="dc">0</span>, <span class="fn">len</span>(matrix) - <span class="dc">1</span>
+    left, right = <span class="dc">0</span>, <span class="fn">len</span>(matrix[<span class="dc">0</span>]) - <span class="dc">1</span>
+    <span class="kw">while</span> top &lt;= bot <span class="kw">and</span> left &lt;= right:
+        <span class="kw">for</span> c <span class="kw">in</span> range(left, right+<span class="dc">1</span>):
+            res.append(matrix[top][c])
+        top += <span class="dc">1</span>
+        <span class="kw">for</span> r <span class="kw">in</span> range(top, bot+<span class="dc">1</span>):
+            res.append(matrix[r][right])
+        right -= <span class="dc">1</span>
+        <span class="kw">if</span> top &lt;= bot:
+            <span class="kw">for</span> c <span class="kw">in</span> range(right, left-<span class="dc">1</span>, -<span class="dc">1</span>):
+                res.append(matrix[bot][c])
+            bot -= <span class="dc">1</span>
+        <span class="kw">if</span> left &lt;= right:
+            <span class="kw">for</span> r <span class="kw">in</span> range(bot, top-<span class="dc">1</span>, -<span class="dc">1</span>):
+                res.append(matrix[r][left])
+            left += <span class="dc">1</span>
+    <span class="kw">return</span> res</pre></div>
+<div class="block"><div class="lbl">Rotate 90° &amp; search sorted 2D</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Rotate 90° clockwise: transpose + reverse</span>
+<span class="kw">def</span> <span class="fn">rotate</span>(matrix):
+    n = <span class="fn">len</span>(matrix)
+    <span class="kw">for</span> i <span class="kw">in</span> range(n):
+        <span class="kw">for</span> j <span class="kw">in</span> range(i+<span class="dc">1</span>, n):
+            matrix[i][j], matrix[j][i] = \
+                matrix[j][i], matrix[i][j]
+    <span class="kw">for</span> row <span class="kw">in</span> matrix:
+        row.reverse()
+
+<span class="cm"># Search sorted 2D (staircase)</span>
+<span class="kw">def</span> <span class="fn">searchMatrix</span>(matrix, target):
+    r, c = <span class="dc">0</span>, <span class="fn">len</span>(matrix[<span class="dc">0</span>]) - <span class="dc">1</span>
+    <span class="kw">while</span> r &lt; <span class="fn">len</span>(matrix) <span class="kw">and</span> c >= <span class="dc">0</span>:
+        <span class="kw">if</span> matrix[r][c] == target:
+            <span class="kw">return True</span>
+        <span class="kw">elif</span> matrix[r][c] > target:
+            c -= <span class="dc">1</span>
+        <span class="kw">else</span>:
+            r += <span class="dc">1</span>
+    <span class="kw">return False</span></pre></div>
+</div>
+</div></div>
+
+<!-- ===== PYTHON TRICKS ===== -->
+
+<div class="card" data-cat="py" data-kw="enumerate zip range reversed sorted map filter functools itertools reduce accumulate">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Built-ins &amp; itertools</span><div class="card-meta"><span class="badge bg-t">Pythonic</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">Essential built-ins</div><button class="cp" onclick="c(this)">copy</button><pre><span class="fn">enumerate</span>(lst)           <span class="cm"># (i, val) pairs</span>
+<span class="fn">enumerate</span>(lst, start=<span class="dc">1</span>)  <span class="cm"># start at 1</span>
+<span class="fn">zip</span>(a, b)                <span class="cm"># pair-wise, stops at shorter</span>
+<span class="fn">zip</span>(*matrix)             <span class="cm"># transpose matrix!</span>
+<span class="fn">zip</span>(a, b, strict=<span class="kw">True</span>)  <span class="cm"># error if lengths differ</span>
+<span class="fn">reversed</span>(lst)            <span class="cm"># iterator (no copy)</span>
+<span class="fn">sorted</span>(d, key=d.get)     <span class="cm"># sort by dict value</span>
+<span class="fn">min</span>(lst, key=<span class="kw">lambda</span> x: x[<span class="dc">1</span>])
+<span class="fn">max</span>(d, key=d.get)        <span class="cm"># key of max value</span>
+<span class="fn">sum</span>(x**<span class="dc">2</span> <span class="kw">for</span> x <span class="kw">in</span> lst)  <span class="cm"># generator sum</span>
+<span class="fn">any</span>(x > <span class="dc">0</span> <span class="kw">for</span> x <span class="kw">in</span> lst)
+<span class="fn">all</span>(x > <span class="dc">0</span> <span class="kw">for</span> x <span class="kw">in</span> lst)</pre></div>
+<div class="block"><div class="lbl">itertools</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> itertools <span class="kw">import</span> (
+    accumulate, product,
+    permutations, combinations,
+    combinations_with_replacement,
+    groupby, chain, islice
+)
+<span class="fn">list</span>(accumulate([<span class="dc">1</span>,<span class="dc">2</span>,<span class="dc">3</span>]))      <span class="cm"># [1,3,6] prefix sums</span>
+<span class="fn">list</span>(permutations([<span class="dc">1</span>,<span class="dc">2</span>],<span class="dc">2</span>))   <span class="cm"># all 2-permutations</span>
+<span class="fn">list</span>(combinations([<span class="dc">1</span>,<span class="dc">2</span>,<span class="dc">3</span>],<span class="dc">2</span>)) <span class="cm"># all 2-combos</span>
+<span class="fn">list</span>(product([<span class="dc">0</span>,<span class="dc">1</span>], repeat=<span class="dc">3</span>)) <span class="cm"># all binary strings len 3</span>
+<span class="fn">list</span>(chain([<span class="dc">1</span>,<span class="dc">2</span>],[<span class="dc">3</span>,<span class="dc">4</span>]))       <span class="cm"># flatten iterables</span></pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">functools</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> functools <span class="kw">import</span> reduce, lru_cache, cache
+
+<span class="fn">reduce</span>(<span class="kw">lambda</span> a,b: a*b, lst) <span class="cm"># product</span>
+<span class="fn">reduce</span>(<span class="kw">lambda</span> a,b: a^b, lst) <span class="cm"># XOR all</span>
+
+<span class="cm"># Custom comparison (cmp_to_key)</span>
+<span class="kw">from</span> functools <span class="kw">import</span> cmp_to_key
+<span class="kw">def</span> <span class="fn">cmp</span>(a, b):
+    <span class="kw">return</span> <span class="dc">-1</span> <span class="kw">if</span> a+b > b+a <span class="kw">else</span> <span class="dc">1</span> <span class="cm"># largest number</span>
+sorted(nums, key=cmp_to_key(cmp))</pre></div>
+<div class="block"><div class="lbl">Useful one-liners</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Flatten list of lists</span>
+flat = [x <span class="kw">for</span> sub <span class="kw">in</span> nested <span class="kw">for</span> x <span class="kw">in</span> sub]
+flat = <span class="fn">list</span>(chain.from_iterable(nested))
+
+<span class="cm"># Transpose matrix</span>
+T = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> <span class="fn">zip</span>(*matrix)]
+
+<span class="cm"># Rotate matrix 90° clockwise</span>
+rot = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> <span class="fn">zip</span>(*matrix[::-<span class="dc">1</span>])]
+
+<span class="cm"># Group anagrams</span>
+g = defaultdict(list)
+<span class="kw">for</span> w <span class="kw">in</span> words: g[<span class="fn">tuple</span>(sorted(w))].append(w)</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="py" data-kw="string manipulation join split replace upper lower isdigit isalpha format ord chr">
+<div class="card-head" onclick="tog(this)"><span class="card-title">String tricks</span><div class="card-meta"><span class="badge bg-t">Pythonic</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">Core methods</div><button class="cp" onclick="c(this)">copy</button><pre>s.lower(); s.upper()
+s.strip(); s.lstrip(); s.rstrip()
+s.split(<span class="st">" "</span>)
+<span class="st">" "</span>.join(words)       <span class="cm"># O(total chars)</span>
+s.replace(<span class="st">"a"</span>, <span class="st">"b"</span>)
+s.startswith(<span class="st">"ab"</span>); s.endswith(<span class="st">"z"</span>)
+s.find(<span class="st">"abc"</span>)          <span class="cm"># -1 if absent</span>
+s.count(<span class="st">"ab"</span>)
+s.isdigit(); s.isalpha(); s.isalnum()
+<span class="st">"x"</span> <span class="kw">in</span> s              <span class="cm"># O(n)</span>
+s[i:j]                 <span class="cm"># O(j-i)</span></pre></div>
+<div class="block"><div class="lbl">Char / ord tricks</div><button class="cp" onclick="c(this)">copy</button><pre><span class="fn">ord</span>(<span class="st">'a'</span>)           <span class="cm"># 97</span>
+<span class="fn">chr</span>(<span class="dc">97</span>)            <span class="cm"># 'a'</span>
+<span class="fn">ord</span>(c) - <span class="fn">ord</span>(<span class="st">'a'</span>) <span class="cm"># letter index 0-25</span>
+<span class="fn">chr</span>(<span class="fn">ord</span>(<span class="st">'a'</span>) + i) <span class="cm"># index → char</span>
+
+<span class="cm"># Char frequency array</span>
+freq = [<span class="dc">0</span>] * <span class="dc">26</span>
+<span class="kw">for</span> c <span class="kw">in</span> s:
+    freq[<span class="fn">ord</span>(c) - <span class="fn">ord</span>(<span class="st">'a'</span>)] += <span class="dc">1</span>
+
+<span class="cm"># Check anagram</span>
+Counter(s) == Counter(t)</pre></div>
+</div>
+<div class="block"><div class="lbl">String building &amp; formatting</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># NEVER build with + in loop → O(n²)</span>
+<span class="cm"># Use list then join → O(n)</span>
+parts = []
+<span class="kw">for</span> c <span class="kw">in</span> s:
+    parts.append(process(c))
+result = <span class="st">""</span>.join(parts)
+
+<span class="cm"># Check palindrome</span>
+s == s[::-<span class="dc">1</span>]
+
+<span class="cm"># Reverse words</span>
+<span class="st">" "</span>.join(s.split()[::-<span class="dc">1</span>])
+
+<span class="cm"># f-strings (Python 3.6+)</span>
+f<span class="st">"value={x:.2f} type={type(x).__name__}"</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="py" data-kw="bit manipulation xor and or shift odd even power count set bits python">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Bit manipulation (Python)</span><div class="card-meta"><span class="badge bg-b">O(1)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Python integers are arbitrary precision</strong> — no overflow! But <code>&amp;</code>, <code>|</code>, <code>^</code>, <code>~</code>, <code>&lt;&lt;</code>, <code>&gt;&gt;</code> all work the same.</div>
+<div class="two">
+<div class="block"><div class="lbl">Operations</div><button class="cp" onclick="c(this)">copy</button><pre>x & <span class="dc">1</span>           <span class="cm"># is odd?</span>
+x >> <span class="dc">1</span>          <span class="cm"># floor div by 2</span>
+x << <span class="dc">1</span>          <span class="cm"># multiply by 2</span>
+x & (x-<span class="dc">1</span>)       <span class="cm"># clear lowest set bit</span>
+x | (<span class="dc">1</span>&lt;&lt;i)      <span class="cm"># set bit i</span>
+x & ~(<span class="dc">1</span>&lt;&lt;i)     <span class="cm"># clear bit i</span>
+x ^ (<span class="dc">1</span>&lt;&lt;i)      <span class="cm"># toggle bit i</span>
+(x >> i) & <span class="dc">1</span>   <span class="cm"># get bit i</span>
+x.bit_count()   <span class="cm"># count 1s (Python 3.10+)</span>
+bin(x).count(<span class="st">'1'</span>)  <span class="cm"># older Python</span></pre></div>
+<div class="block"><div class="lbl">Patterns</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># XOR: find single number</span>
+result = <span class="dc">0</span>
+<span class="kw">for</span> n <span class="kw">in</span> nums: result ^= n
+
+<span class="cm"># Power of 2?</span>
+n > <span class="dc">0</span> <span class="kw">and</span> (n & (n-<span class="dc">1</span>)) == <span class="dc">0</span>
+
+<span class="cm"># Count set bits</span>
+cnt = <span class="dc">0</span>
+<span class="kw">while</span> n: n &= n-<span class="dc">1</span>; cnt += <span class="dc">1</span>
+
+<span class="cm"># Bitmask subsets</span>
+mask = ((<span class="dc">1</span> &lt;&lt; n) - <span class="dc">1</span>)   <span class="cm"># all n bits set</span>
+sub = mask
+<span class="kw">while</span> sub:
+    process(sub)
+    sub = (sub - <span class="dc">1</span>) & mask</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="py" data-kw="math infinity float int divmod gcd lcm pow abs round">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Math &amp; number tricks</span><div class="card-meta"><span class="badge bg-b">Python-specific</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="two">
+<div class="block"><div class="lbl">Python math</div><button class="cp" onclick="c(this)">copy</button><pre><span class="fn">float</span>(<span class="st">'inf'</span>)      <span class="cm"># positive infinity</span>
+-<span class="fn">float</span>(<span class="st">'inf'</span>)     <span class="cm"># negative infinity</span>
+<span class="fn">abs</span>(x)
+<span class="fn">pow</span>(x, n, mod)    <span class="cm"># fast modular exponentiation!</span>
+x // y            <span class="cm"># floor division</span>
+x % y             <span class="cm"># always >= 0 in Python!</span>
+<span class="fn">divmod</span>(x, y)      <span class="cm"># (quotient, remainder)</span>
+<span class="fn">round</span>(x, ndigits)
+<span class="kw">import</span> math
+math.gcd(a, b)    <span class="cm"># GCD (Python 3.5+)</span>
+math.lcm(a, b)    <span class="cm"># LCM (Python 3.9+)</span>
+math.ceil(x); math.floor(x)
+math.log(x, base); math.sqrt(x)
+math.inf          <span class="cm"># same as float('inf')</span></pre></div>
+<div class="block"><div class="lbl">Python integer advantages</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># No overflow — Python ints are unlimited!</span>
+<span class="fn">print</span>(<span class="dc">2</span>**<span class="dc">1000</span>)     <span class="cm"># works fine</span>
+
+<span class="cm"># Chained comparisons</span>
+<span class="dc">1</span> &lt; x &lt; <span class="dc">10</span>        <span class="cm"># Pythonic (not 1<x and x<10)</span>
+
+<span class="cm"># Integer division behavior</span>
+<span class="dc">7</span> // <span class="dc">2</span>  <span class="cm"># = 3   (floor, unlike Java)</span>
+-<span class="dc">7</span> // <span class="dc">2</span> <span class="cm"># = -4  (floor, Java gives -3!)</span>
+-<span class="dc">7</span> %  <span class="dc">2</span> <span class="cm"># = 1   (always positive in Python)</span>
+
+<span class="cm"># Multiple assignment / swap</span>
+a, b = b, a       <span class="cm"># no temp var needed</span>
+a, b, c = <span class="dc">1</span>, <span class="dc">2</span>, <span class="dc">3</span></pre></div>
+</div>
+</div></div>
+
+<!-- ===== GOTCHAS ===== -->
+
+<div class="card" data-cat="tip" data-kw="recursion limit sys setrecursionlimit stack overflow iterative">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Recursion limit &amp; iterative DFS</span><div class="card-meta"><span class="badge bg-r">watch out</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Python default recursion limit is 1000.</strong> Deep DFS on large inputs will crash. Always increase or convert to iterative.</div>
+<div class="block"><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> sys
+sys.setrecursionlimit(<span class="dc">10</span>**<span class="dc">6</span>)   <span class="cm"># set at top of solution</span>
+
+<span class="cm"># Or convert to iterative with explicit stack</span>
+<span class="kw">def</span> <span class="fn">dfs_iterative</span>(root):
+    <span class="kw">if not</span> root: <span class="kw">return</span>
+    stack = [root]
+    <span class="kw">while</span> stack:
+        node = stack.pop()
+        <span class="cm"># process node</span>
+        <span class="kw">if</span> node.right: stack.append(node.right)
+        <span class="kw">if</span> node.left:  stack.append(node.left)
+
+<span class="cm"># Iterative postorder — reverse preorder trick</span>
+stack = [root]; res = []
+<span class="kw">while</span> stack:
+    n = stack.pop(); res.append(n.val)
+    <span class="kw">if</span> n.left: stack.append(n.left)
+    <span class="kw">if</span> n.right: stack.append(n.right)
+<span class="kw">return</span> res[::-<span class="dc">1</span>]</pre></div>
+</div></div>
+
+<div class="card" data-cat="tip" data-kw="pitfalls mutable default argument shallow copy list dict identity equality reference">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Python pitfalls &amp; traps</span><div class="card-meta"><span class="badge bg-r">watch out</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Mutable default argument:</strong> <code>def f(lst=[])</code> shares the same list across all calls. Use <code>def f(lst=None): lst = lst or []</code>.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Shallow copy trap:</strong> <code>b = a</code> copies a reference. <code>b = a[:]</code> or <code>b = list(a)</code> copies the list. For 2D: use <code>copy.deepcopy()</code> or <code>[row[:] for row in grid]</code>.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>List multiplication 2D:</strong> <code>[[0]*n]*m</code> creates m references to the same row. Always use <code>[[0]*n for _ in range(m)]</code>.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Modifying list while iterating:</strong> results in skipped or duplicated elements. Iterate over a copy: <code>for x in lst[:]:</code> or collect and modify after.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong><code>list.pop(0)</code> is O(n).</strong> Use <code>collections.deque</code> with <code>popleft()</code> for O(1) front removal.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Backtracking: <code>res.append(path)</code></strong> appends a reference. Always append a copy: <code>res.append(path[:])</code>.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Walrus operator scope:</strong> <code>if (n := len(a)) > 10:</code> — <code>n</code> leaks into the enclosing scope. Useful for while-loops: <code>while chunk := f.read(8192):</code>.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Integer division:</strong> Python's <code>//</code> floors toward negative infinity (<code>-7//2 == -4</code>), not toward zero like Java/C (<code>-7/2 == -3</code>).</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>Global/nonlocal:</strong> In nested functions, you must declare <code>nonlocal x</code> to reassign an outer variable. Reading is fine without it.</span></div>
+<div class="pf"><span class="pi">⚠</span><span class="pt"><strong>heapq is min-heap only.</strong> To simulate max-heap, push/pop negated values. For tuples, Python compares lexicographically, so <code>(priority, idx, item)</code> breaks ties.</span></div>
+</div></div>
+
+<div class="card" data-cat="tip" data-kw="complexity time space big o reference cheat sheet operations list dict set heap deque">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Complexity quick reference</span><div class="card-meta"><span class="badge bg-p">big-O</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<table class="cx">
+<tr><th>Operation</th><th>Time</th><th>Notes</th></tr>
+<tr><td>dict/set get, set, in</td><td>O(1) avg</td><td>O(n) worst</td></tr>
+<tr><td>list append / pop()</td><td>O(1) amort</td><td>from end</td></tr>
+<tr><td>list pop(0) / insert(0,x)</td><td>O(n)</td><td>use deque!</td></tr>
+<tr><td>list[i] access</td><td>O(1)</td><td></td></tr>
+<tr><td>list in (x in lst)</td><td>O(n)</td><td>use set for O(1)</td></tr>
+<tr><td>list slice [a:b]</td><td>O(b-a)</td><td>creates copy</td></tr>
+<tr><td>deque appendleft/popleft</td><td>O(1)</td><td></td></tr>
+<tr><td>heapq push/pop</td><td>O(log n)</td><td></td></tr>
+<tr><td>heapq heapify</td><td>O(n)</td><td>not O(n log n)!</td></tr>
+<tr><td>sorted() / list.sort()</td><td>O(n log n)</td><td>Timsort, stable</td></tr>
+<tr><td>Counter(lst)</td><td>O(n)</td><td></td></tr>
+<tr><td>set union / intersection</td><td>O(min(a,b))</td><td>for intersection</td></tr>
+<tr><td>BFS / DFS graph</td><td>O(V+E)</td><td></td></tr>
+<tr><td>BFS / DFS tree</td><td>O(n)</td><td></td></tr>
+<tr><td>Union Find find/union</td><td>O(α(n))</td><td>near O(1)</td></tr>
+<tr><td>Trie insert/search</td><td>O(m)</td><td>m = word length</td></tr>
+<tr><td>str join (list→str)</td><td>O(n)</td><td>use join not +=</td></tr>
+<tr><td>str += in loop</td><td>O(n²)</td><td>use list + join</td></tr>
+<tr><td>heapq.nlargest/nsmallest</td><td>O(n log k)</td><td>not O(n log n)</td></tr>
+</table>
+</div></div>
+
+<div class="card" data-cat="tip" data-kw="interview patterns problem recognition when to use which structure approach">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Pattern recognition guide</span><div class="card-meta"><span class="badge bg-o">strategy</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="tip-box"><span class="tip-label">When you see...</span>
+Top K / K largest / K frequent → <strong>heapq</strong> (min-heap size K) or <strong>quickselect</strong><br>
+Sliding window / substring / subarray → <strong>two pointers + dict/Counter</strong><br>
+"Next greater/smaller" / temperatures → <strong>monotonic stack</strong><br>
+Shortest path (unweighted) → <strong>BFS</strong><br>
+Shortest path (weighted, non-negative) → <strong>Dijkstra (heapq)</strong><br>
+Connected components / union groups → <strong>Union Find or BFS/DFS</strong><br>
+Cycle detection (linked list) → <strong>Floyd's fast/slow</strong><br>
+Prefix/word matching → <strong>Trie</strong><br>
+Course schedule / dependency order → <strong>Topological sort (Kahn's BFS)</strong><br>
+All subsets / permutations / combinations → <strong>Backtracking</strong><br>
+Optimal substructure / overlapping subproblems → <strong>DP (@cache)</strong><br>
+Sorted + find target → <strong>Binary search / bisect</strong><br>
+Frequency / grouping / anagram → <strong>Counter / defaultdict</strong><br>
+LRU Cache → <strong>OrderedDict</strong><br>
+Range sum query → <strong>Prefix sum array</strong><br>
+Overlapping / merge intervals → <strong>Sort by start + scan</strong><br>
+Meeting rooms / concurrent events → <strong>Min-heap of end times</strong><br>
+Can you reach / min steps → <strong>Greedy (track farthest reach)</strong><br>
+Linked list manipulation → <strong>Dummy head + prev/curr/next</strong><br>
+Matrix traversal / rotate / spiral → <strong>Boundary pointers or transpose</strong>
+</div>
+</div></div>
+
+<!-- ===== RECURSION ===== -->
+
+<div class="card" data-cat="rec" data-kw="recursion base case call stack anatomy structure how recursion works">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Recursion anatomy &amp; mental model</span><div class="card-meta"><span class="badge bg-p">foundation</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Every recursive function needs:</strong> (1) a base case that stops, (2) a recursive call that moves toward it, (3) trust — assume the recursive call returns the correct answer and build on top of it.</div>
+<div class="block"><div class="lbl">Anatomy of a recursive function</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">solve</span>(problem):
+    <span class="cm"># 1. BASE CASE — stop condition (often None, 0, empty)</span>
+    <span class="kw">if</span> problem <span class="kw">is</span> small_enough:
+        <span class="kw">return</span> base_answer
+
+    <span class="cm"># 2. REDUCE — make the problem smaller</span>
+    smaller = reduce(problem)
+
+    <span class="cm"># 3. RECURSE — trust it returns correct answer</span>
+    sub_answer = solve(smaller)
+
+    <span class="cm"># 4. COMBINE — build your answer from sub_answer</span>
+    <span class="kw">return</span> combine(sub_answer, problem)</pre></div>
+<div class="two">
+<div class="block"><div class="lbl">Classic examples</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Factorial</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n):
+    <span class="kw">if</span> n &lt;= <span class="dc">1</span>: <span class="kw">return</span> <span class="dc">1</span>        <span class="cm"># base</span>
+    <span class="kw">return</span> n * factorial(n-<span class="dc">1</span>)  <span class="cm"># reduce + combine</span>
+
+<span class="cm"># Fibonacci (naive — use @cache in practice)</span>
+<span class="kw">def</span> <span class="fn">fib</span>(n):
+    <span class="kw">if</span> n &lt;= <span class="dc">1</span>: <span class="kw">return</span> n
+    <span class="kw">return</span> fib(n-<span class="dc">1</span>) + fib(n-<span class="dc">2</span>)
+
+<span class="cm"># Power</span>
+<span class="kw">def</span> <span class="fn">power</span>(x, n):
+    <span class="kw">if</span> n == <span class="dc">0</span>: <span class="kw">return</span> <span class="dc">1</span>
+    <span class="kw">if</span> n % <span class="dc">2</span> == <span class="dc">0</span>:             <span class="cm"># fast power O(log n)</span>
+        half = power(x, n//<span class="dc">2</span>)
+        <span class="kw">return</span> half * half
+    <span class="kw">return</span> x * power(x, n-<span class="dc">1</span>)</pre></div>
+<div class="block"><div class="lbl">Call stack visualization</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># factorial(4) — call stack unwinds like this:</span>
+<span class="cm">#</span>
+<span class="cm"># factorial(4)  ← calls factorial(3)</span>
+<span class="cm">#   factorial(3)  ← calls factorial(2)</span>
+<span class="cm">#     factorial(2)  ← calls factorial(1)</span>
+<span class="cm">#       factorial(1) → returns 1    ← BASE</span>
+<span class="cm">#     factorial(2) → returns 2*1=2  ← UNWIND</span>
+<span class="cm">#   factorial(3) → returns 3*2=6</span>
+<span class="cm"># factorial(4) → returns 4*6=24</span>
+<span class="cm">#</span>
+<span class="cm"># Each frame holds its own n on the stack.</span>
+<span class="cm"># Stack depth = O(n). Max ~1000 in Python.</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="self parameter class method recursion instance variable leetcode solution class">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Recursion with <code>self</code> — class-based patterns</span><div class="card-meta"><span class="badge bg-t">LeetCode style</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">LeetCode wraps solutions in a <code>Solution</code> class. You call helper methods with <code>self.helper()</code> and store shared state as instance variables. This is the most common interview pattern.</div>
+<div class="block"><div class="lbl">Standard LeetCode class pattern</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">maxDepth</span>(self, root) -> <span class="fn">int</span>:
+        <span class="cm"># self is the Solution instance — gives you access</span>
+        <span class="cm"># to other methods you define in the class</span>
+        <span class="kw">if not</span> root: <span class="kw">return</span> <span class="dc">0</span>
+        <span class="kw">return</span> <span class="dc">1</span> + <span class="fn">max</span>(self.maxDepth(root.left),
+                        self.maxDepth(root.right))
+        <span class="cm"># ^ calls itself via self — equivalent to maxDepth(root.left)</span>
+        <span class="cm">#   but required when inside a class</span></pre></div>
+<div class="two">
+<div class="block"><div class="lbl">self as shared state (accumulator)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">diameterOfBinaryTree</span>(self, root) -> <span class="fn">int</span>:
+        self.ans = <span class="dc">0</span>    <span class="cm"># instance var — shared across all</span>
+                        <span class="cm"># recursive calls, no nonlocal needed</span>
+        <span class="kw">def</span> <span class="fn">depth</span>(node):
+            <span class="kw">if not</span> node: <span class="kw">return</span> <span class="dc">0</span>
+            L = depth(node.left)
+            R = depth(node.right)
+            self.ans = <span class="fn">max</span>(self.ans, L + R)  <span class="cm"># update via self</span>
+            <span class="kw">return</span> <span class="dc">1</span> + <span class="fn">max</span>(L, R)
+        depth(root)
+        <span class="kw">return</span> self.ans</pre></div>
+<div class="block"><div class="lbl">self.helper() — separate method</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">pathSum</span>(self, root, target) -> <span class="fn">int</span>:
+        self.count = <span class="dc">0</span>
+        <span class="kw">def</span> <span class="fn">dfs</span>(node, curr):
+            <span class="kw">if not</span> node: <span class="kw">return</span>
+            curr += node.val
+            <span class="kw">if</span> curr == target:
+                self.count += <span class="dc">1</span>
+            dfs(node.left, curr)
+            dfs(node.right, curr)
+        dfs(root, <span class="dc">0</span>)
+        <span class="kw">return</span> self.count
+
+    <span class="cm"># Alternatively, delegate to a helper method:</span>
+    <span class="kw">def</span> <span class="fn">_dfs</span>(self, node, curr, target):
+        <span class="kw">if not</span> node: <span class="kw">return</span> <span class="dc">0</span>
+        curr += node.val
+        same = <span class="dc">1</span> <span class="kw">if</span> curr == target <span class="kw">else</span> <span class="dc">0</span>
+        <span class="kw">return</span> same + self._dfs(node.left, curr, target) \
+                     + self._dfs(node.right, curr, target)</pre></div>
+</div>
+<div class="block"><div class="lbl">When to use self vs nonlocal vs return value</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># OPTION 1 — self.var (easiest in class context)</span>
+<span class="cm"># Use when: accumulating a single result (max, count, list)</span>
+self.res = []
+<span class="kw">def</span> <span class="fn">dfs</span>(node): self.res.append(node.val)
+
+<span class="cm"># OPTION 2 — nonlocal (inside nested function)</span>
+<span class="cm"># Use when: you're not in a class, modifying a scalar</span>
+res = [<span class="dc">0</span>]   <span class="cm"># list trick avoids nonlocal for simple counters</span>
+<span class="kw">def</span> <span class="fn">dfs</span>(node): res[<span class="dc">0</span>] += <span class="dc">1</span>
+
+count = <span class="dc">0</span>
+<span class="kw">def</span> <span class="fn">dfs</span>(node):
+    <span class="kw">nonlocal</span> count   <span class="cm"># required to reassign (not just read)</span>
+    count += <span class="dc">1</span>
+
+<span class="cm"># OPTION 3 — return value (cleanest, functional)</span>
+<span class="cm"># Use when: the result is naturally computed bottom-up</span>
+<span class="kw">def</span> <span class="fn">dfs</span>(node):
+    <span class="kw">if not</span> node: <span class="kw">return</span> <span class="dc">0</span>
+    <span class="kw">return</span> <span class="dc">1</span> + dfs(node.left) + dfs(node.right)</pre></div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="helper function inner function nested closure nonlocal variable accumulate recursion pattern">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Inner helper functions &amp; nonlocal</span><div class="card-meta"><span class="badge bg-t">key pattern</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Defining the recursive helper <em>inside</em> the outer method is the cleanest Python interview pattern — it closes over parameters and results without extra arguments.</div>
+<div class="block"><div class="lbl">Closure over result</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">goodNodes</span>(root) -> <span class="fn">int</span>:
+    <span class="cm"># res is mutable via list — avoids nonlocal</span>
+    res = [<span class="dc">0</span>]
+    <span class="kw">def</span> <span class="fn">dfs</span>(node, max_so_far):
+        <span class="kw">if not</span> node: <span class="kw">return</span>
+        <span class="kw">if</span> node.val >= max_so_far:
+            res[<span class="dc">0</span>] += <span class="dc">1</span>
+        dfs(node.left,  <span class="fn">max</span>(max_so_far, node.val))
+        dfs(node.right, <span class="fn">max</span>(max_so_far, node.val))
+    dfs(root, <span class="fn">float</span>(<span class="st">'-inf'</span>))
+    <span class="kw">return</span> res[<span class="dc">0</span>]</pre></div>
+<div class="two">
+<div class="block"><div class="lbl">nonlocal — correct usage</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">countNodes</span>(root) -> <span class="fn">int</span>:
+    count = <span class="dc">0</span>
+    <span class="kw">def</span> <span class="fn">dfs</span>(node):
+        <span class="kw">nonlocal</span> count      <span class="cm"># needed to reassign</span>
+        <span class="kw">if not</span> node: <span class="kw">return</span>
+        count += <span class="dc">1</span>          <span class="cm"># now works</span>
+        dfs(node.left)
+        dfs(node.right)
+    dfs(root)
+    <span class="kw">return</span> count
+
+<span class="cm"># Reading outer var is fine without nonlocal:</span>
+target = <span class="dc">5</span>
+<span class="kw">def</span> <span class="fn">dfs</span>(n):
+    <span class="kw">if</span> n.val == target: ...  <span class="cm"># OK, just reading</span></pre></div>
+<div class="block"><div class="lbl">Closure over memo dict</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">solve</span>(nums):
+    memo = {}                  <span class="cm"># shared across calls</span>
+    <span class="kw">def</span> <span class="fn">dp</span>(i, remaining):
+        <span class="kw">if</span> (i, remaining) <span class="kw">in</span> memo:
+            <span class="kw">return</span> memo[(i, remaining)]
+        <span class="kw">if</span> i == <span class="fn">len</span>(nums): <span class="kw">return</span> <span class="dc">0</span>
+        res = <span class="fn">max</span>(
+            dp(i+<span class="dc">1</span>, remaining),
+            nums[i] + dp(i+<span class="dc">2</span>, remaining-<span class="dc">1</span>)
+        )
+        memo[(i, remaining)] = res
+        <span class="kw">return</span> res
+    <span class="kw">return</span> dp(<span class="dc">0</span>, k)</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="tree recursion return multiple values tuple postorder bottom up">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Tree recursion — return multiple values</span><div class="card-meta"><span class="badge bg-g">O(n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">The most powerful tree pattern: return a <strong>tuple of everything you need from a subtree</strong> so the parent can compute its answer bottom-up. Avoids global state entirely.</div>
+<div class="two">
+<div class="block"><div class="lbl">Balanced binary tree</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">isBalanced</span>(self, root) -> <span class="fn">bool</span>:
+        <span class="kw">def</span> <span class="fn">check</span>(node):
+            <span class="cm"># returns (is_balanced, height)</span>
+            <span class="kw">if not</span> node: <span class="kw">return True</span>, <span class="dc">0</span>
+            lb, lh = check(node.left)
+            rb, rh = check(node.right)
+            balanced = lb <span class="kw">and</span> rb <span class="kw">and</span> <span class="fn">abs</span>(lh-rh) &lt;= <span class="dc">1</span>
+            <span class="kw">return</span> balanced, <span class="dc">1</span> + <span class="fn">max</span>(lh, rh)
+        <span class="kw">return</span> check(root)[<span class="dc">0</span>]</pre></div>
+<div class="block"><div class="lbl">Camera surveillance (3 states)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">minCameraCover</span>(self, root) -> <span class="fn">int</span>:
+        self.cams = <span class="dc">0</span>
+        <span class="kw">def</span> <span class="fn">dfs</span>(node):
+            <span class="cm"># returns: 0=uncovered, 1=covered, 2=has_camera</span>
+            <span class="kw">if not</span> node: <span class="kw">return</span> <span class="dc">1</span>   <span class="cm"># null = covered</span>
+            l, r = dfs(node.left), dfs(node.right)
+            <span class="kw">if</span> l == <span class="dc">0</span> <span class="kw">or</span> r == <span class="dc">0</span>:    <span class="cm"># child needs coverage</span>
+                self.cams += <span class="dc">1</span>; <span class="kw">return</span> <span class="dc">2</span>
+            <span class="kw">if</span> l == <span class="dc">2</span> <span class="kw">or</span> r == <span class="dc">2</span>:    <span class="cm"># child has camera</span>
+                <span class="kw">return</span> <span class="dc">1</span>
+            <span class="kw">return</span> <span class="dc">0</span>               <span class="cm"># need parent to cover</span>
+        <span class="kw">if</span> dfs(root) == <span class="dc">0</span>: self.cams += <span class="dc">1</span>
+        <span class="kw">return</span> self.cams</pre></div>
+</div>
+<div class="block"><div class="lbl">Lowest common ancestor (LCA)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">lowestCommonAncestor</span>(self, root, p, q):
+        <span class="kw">def</span> <span class="fn">dfs</span>(node):
+            <span class="kw">if not</span> node <span class="kw">or</span> node == p <span class="kw">or</span> node == q:
+                <span class="kw">return</span> node           <span class="cm"># found one or null</span>
+            left  = dfs(node.left)
+            right = dfs(node.right)
+            <span class="cm"># if both sides returned something, this is LCA</span>
+            <span class="kw">if</span> left <span class="kw">and</span> right: <span class="kw">return</span> node
+            <span class="kw">return</span> left <span class="kw">or</span> right      <span class="cm"># propagate up</span>
+        <span class="kw">return</span> dfs(root)</pre></div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="memoization @cache @lru_cache top down dp functools recursion optimize">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Memoized recursion — @cache / @lru_cache</span><div class="card-meta"><span class="badge bg-a">top-down DP</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><code>@cache</code> is the single most powerful tool for recursive DP in Python. It turns exponential recursion into polynomial by caching every (args) → result mapping automatically.</div>
+<div class="block"><div class="lbl">@cache — simplest top-down DP</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> functools <span class="kw">import</span> cache
+
+<span class="cm"># Coin change — O(amount * len(coins))</span>
+<span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">coinChange</span>(self, coins, amount) -> <span class="fn">int</span>:
+        @cache              <span class="cm"># decorates inner function</span>
+        <span class="kw">def</span> <span class="fn">dp</span>(rem):
+            <span class="kw">if</span> rem == <span class="dc">0</span>: <span class="kw">return</span> <span class="dc">0</span>
+            <span class="kw">if</span> rem &lt; <span class="dc">0</span>: <span class="kw">return</span> <span class="fn">float</span>(<span class="st">'inf'</span>)
+            <span class="kw">return</span> <span class="dc">1</span> + <span class="fn">min</span>(dp(rem - c) <span class="kw">for</span> c <span class="kw">in</span> coins)
+        res = dp(amount)
+        dp.cache_clear()    <span class="cm"># IMPORTANT: clear between test cases!</span>
+        <span class="kw">return</span> res <span class="kw">if</span> res != <span class="fn">float</span>(<span class="st">'inf'</span>) <span class="kw">else</span> -<span class="dc">1</span></pre></div>
+<div class="two">
+<div class="block"><div class="lbl">@lru_cache on class method</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">longestPalin</span>(self, s: <span class="fn">str</span>) -> <span class="fn">int</span>:
+        n = <span class="fn">len</span>(s)
+        <span class="cm"># lru_cache on nested function captures s</span>
+        @lru_cache(maxsize=<span class="kw">None</span>)
+        <span class="kw">def</span> <span class="fn">dp</span>(i, j):
+            <span class="kw">if</span> i > j: <span class="kw">return</span> <span class="dc">0</span>
+            <span class="kw">if</span> i == j: <span class="kw">return</span> <span class="dc">1</span>
+            <span class="kw">if</span> s[i] == s[j]:
+                <span class="kw">return</span> <span class="dc">2</span> + dp(i+<span class="dc">1</span>, j-<span class="dc">1</span>)
+            <span class="kw">return</span> <span class="fn">max</span>(dp(i+<span class="dc">1</span>, j), dp(i, j-<span class="dc">1</span>))
+        <span class="kw">return</span> dp(<span class="dc">0</span>, n-<span class="dc">1</span>)</pre></div>
+<div class="block"><div class="lbl">Explicit memo dict (most flexible)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">uniquePaths</span>(self, m, n) -> <span class="fn">int</span>:
+        memo = {}
+        <span class="kw">def</span> <span class="fn">dp</span>(r, c):
+            <span class="kw">if</span> r == <span class="dc">0</span> <span class="kw">or</span> c == <span class="dc">0</span>: <span class="kw">return</span> <span class="dc">1</span>
+            <span class="kw">if</span> (r,c) <span class="kw">in</span> memo: <span class="kw">return</span> memo[(r,c)]
+            res = dp(r-<span class="dc">1</span>, c) + dp(r, c-<span class="dc">1</span>)
+            memo[(r,c)] = res
+            <span class="kw">return</span> res
+        <span class="kw">return</span> dp(m-<span class="dc">1</span>, n-<span class="dc">1</span>)</pre></div>
+</div>
+<div class="tip-box"><span class="tip-label">@cache gotcha</span>
+When <code>@cache</code>/<code>@lru_cache</code> decorates a nested function, it holds a reference to the enclosing scope (like <code>coins</code> or <code>s</code>). Always call <code>dp.cache_clear()</code> after use, or the cache persists across LeetCode test cases and causes Wrong Answer on later tests.
+</div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="divide conquer merge sort recursion split mid combine">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Divide &amp; conquer recursion</span><div class="card-meta"><span class="badge bg-g">O(n log n)</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Split problem in half, recurse on each half, combine results. The key is identifying the <strong>combine step</strong> — that's usually where the work happens.</div>
+<div class="two">
+<div class="block"><div class="lbl">Merge sort (implement from scratch)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">merge_sort</span>(arr):
+    <span class="kw">if</span> <span class="fn">len</span>(arr) &lt;= <span class="dc">1</span>: <span class="kw">return</span> arr  <span class="cm"># base case</span>
+    mid = <span class="fn">len</span>(arr) // <span class="dc">2</span>
+    L = merge_sort(arr[:mid])
+    R = merge_sort(arr[mid:])
+    <span class="kw">return</span> merge(L, R)
+
+<span class="kw">def</span> <span class="fn">merge</span>(L, R):
+    res, i, j = [], <span class="dc">0</span>, <span class="dc">0</span>
+    <span class="kw">while</span> i &lt; <span class="fn">len</span>(L) <span class="kw">and</span> j &lt; <span class="fn">len</span>(R):
+        <span class="kw">if</span> L[i] &lt;= R[j]: res.append(L[i]); i += <span class="dc">1</span>
+        <span class="kw">else</span>:            res.append(R[j]); j += <span class="dc">1</span>
+    <span class="kw">return</span> res + L[i:] + R[j:]</pre></div>
+<div class="block"><div class="lbl">Count inversions (D&amp;C)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">count_inversions</span>(arr):
+    <span class="kw">if</span> <span class="fn">len</span>(arr) &lt;= <span class="dc">1</span>: <span class="kw">return</span> arr, <span class="dc">0</span>
+    mid = <span class="fn">len</span>(arr) // <span class="dc">2</span>
+    L, lc = count_inversions(arr[:mid])
+    R, rc = count_inversions(arr[mid:])
+    merged, mc = merge_count(L, R)
+    <span class="kw">return</span> merged, lc + rc + mc
+
+<span class="kw">def</span> <span class="fn">merge_count</span>(L, R):
+    res, inv, i, j = [], <span class="dc">0</span>, <span class="dc">0</span>, <span class="dc">0</span>
+    <span class="kw">while</span> i &lt; <span class="fn">len</span>(L) <span class="kw">and</span> j &lt; <span class="fn">len</span>(R):
+        <span class="kw">if</span> L[i] &lt;= R[j]: res.append(L[i]); i += <span class="dc">1</span>
+        <span class="kw">else</span>:
+            inv += <span class="fn">len</span>(L) - i  <span class="cm"># all remaining L > R[j]</span>
+            res.append(R[j]); j += <span class="dc">1</span>
+    <span class="kw">return</span> res + L[i:] + R[j:], inv</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="mutual recursion two functions even odd grammar parsing">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Recursion on strings / linked lists / arrays</span><div class="card-meta"><span class="badge bg-b">common shapes</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">The <em>shape</em> of the recursion is determined by the data structure. Strings and arrays recurse on index or slice; linked lists recurse on <code>.next</code>; trees recurse on <code>.left/.right</code>.</div>
+<div class="two">
+<div class="block"><div class="lbl">String / array by index</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Palindrome check</span>
+<span class="kw">def</span> <span class="fn">is_palindrome</span>(s, l=<span class="dc">0</span>, r=<span class="kw">None</span>):
+    <span class="kw">if</span> r <span class="kw">is None</span>: r = <span class="fn">len</span>(s) - <span class="dc">1</span>
+    <span class="kw">if</span> l >= r: <span class="kw">return True</span>           <span class="cm"># base</span>
+    <span class="kw">if</span> s[l] != s[r]: <span class="kw">return False</span>
+    <span class="kw">return</span> is_palindrome(s, l+<span class="dc">1</span>, r-<span class="dc">1</span>)
+
+<span class="cm"># Generate all subsets via index</span>
+<span class="kw">def</span> <span class="fn">subsets</span>(nums, i=<span class="dc">0</span>, path=[]):
+    <span class="kw">if</span> i == <span class="fn">len</span>(nums):
+        res.append(path[:])
+        <span class="kw">return</span>
+    subsets(nums, i+<span class="dc">1</span>, path)         <span class="cm"># skip nums[i]</span>
+    path.append(nums[i])
+    subsets(nums, i+<span class="dc">1</span>, path)         <span class="cm"># include nums[i]</span>
+    path.pop()</pre></div>
+<div class="block"><div class="lbl">Linked list recursion</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Reverse a linked list recursively</span>
+<span class="kw">def</span> <span class="fn">reverseList</span>(head):
+    <span class="kw">if not</span> head <span class="kw">or not</span> head.next:
+        <span class="kw">return</span> head                 <span class="cm"># base: 1 node</span>
+    new_head = reverseList(head.next)
+    head.next.next = head           <span class="cm"># reverse pointer</span>
+    head.next = <span class="kw">None</span>
+    <span class="kw">return</span> new_head
+
+<span class="cm"># Print linked list values in reverse</span>
+<span class="kw">def</span> <span class="fn">print_reverse</span>(node):
+    <span class="kw">if not</span> node: <span class="kw">return</span>
+    print_reverse(node.next)        <span class="cm"># recurse first</span>
+    <span class="fn">print</span>(node.val)                 <span class="cm"># then process</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Decode ways / combinatorial on string</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Solution</span>:
+    <span class="kw">def</span> <span class="fn">numDecodings</span>(self, s: <span class="fn">str</span>) -> <span class="fn">int</span>:
+        <span class="kw">from</span> functools <span class="kw">import</span> cache
+        @cache
+        <span class="kw">def</span> <span class="fn">dp</span>(i):
+            <span class="kw">if</span> i == <span class="fn">len</span>(s): <span class="kw">return</span> <span class="dc">1</span>   <span class="cm"># reached end</span>
+            <span class="kw">if</span> s[i] == <span class="st">'0'</span>: <span class="kw">return</span> <span class="dc">0</span>   <span class="cm"># invalid</span>
+            res = dp(i + <span class="dc">1</span>)              <span class="cm"># 1-digit decode</span>
+            <span class="kw">if</span> i+<span class="dc">1</span> &lt; <span class="fn">len</span>(s) <span class="kw">and</span> <span class="dc">10</span> &lt;= <span class="fn">int</span>(s[i:i+<span class="dc">2</span>]) &lt;= <span class="dc">26</span>:
+                res += dp(i + <span class="dc">2</span>)        <span class="cm"># 2-digit decode</span>
+            <span class="kw">return</span> res
+        <span class="kw">return</span> dp(<span class="dc">0</span>)</pre></div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="tail recursion optimization trampoline iterative conversion stack frame">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Tail recursion, stack depth &amp; converting to iterative</span><div class="card-meta"><span class="badge bg-r">Python limits</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><strong>Python does NOT optimize tail calls.</strong> Every recursive call adds a frame regardless. For deep inputs (n > 1000), either increase the limit or rewrite iteratively. Know how to convert any recursion to a stack-based loop.</div>
+<div class="two">
+<div class="block"><div class="lbl">Tail recursion (Python ignores it, but good form)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Non-tail: builds up call stack waiting for results</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n):
+    <span class="kw">if</span> n == <span class="dc">1</span>: <span class="kw">return</span> <span class="dc">1</span>
+    <span class="kw">return</span> n * factorial(n-<span class="dc">1</span>)  <span class="cm"># waits for result</span>
+
+<span class="cm"># Tail-recursive form (accumulator pattern)</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n, acc=<span class="dc">1</span>):
+    <span class="kw">if</span> n == <span class="dc">1</span>: <span class="kw">return</span> acc
+    <span class="kw">return</span> factorial(n-<span class="dc">1</span>, n*acc)  <span class="cm"># last op = the call</span>
+<span class="cm"># Python still creates n frames for both — no TCO!</span>
+
+<span class="cm"># True fix: convert to iterative</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n):
+    acc = <span class="dc">1</span>
+    <span class="kw">while</span> n > <span class="dc">1</span>: acc *= n; n -= <span class="dc">1</span>
+    <span class="kw">return</span> acc</pre></div>
+<div class="block"><div class="lbl">Convert any DFS to iterative</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Recursive preorder</span>
+<span class="kw">def</span> <span class="fn">preorder</span>(node):
+    <span class="kw">if not</span> node: <span class="kw">return</span>
+    visit(node)
+    preorder(node.left)
+    preorder(node.right)
+
+<span class="cm"># Iterative equivalent — simulate call stack</span>
+<span class="kw">def</span> <span class="fn">preorder_iter</span>(root):
+    <span class="kw">if not</span> root: <span class="kw">return</span>
+    stack = [root]
+    <span class="kw">while</span> stack:
+        node = stack.pop()
+        visit(node)
+        <span class="cm"># right first → left processed first (LIFO)</span>
+        <span class="kw">if</span> node.right: stack.append(node.right)
+        <span class="kw">if</span> node.left:  stack.append(node.left)</pre></div>
+</div>
+<div class="block"><div class="lbl">General recursion → iteration template</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Any recursive function can become iterative</span>
+<span class="cm"># by pushing (node, state) tuples onto a stack</span>
+
+<span class="cm"># Postorder iterative (tricky — two visits per node)</span>
+<span class="kw">def</span> <span class="fn">postorder_iter</span>(root):
+    stack, res = [(root, <span class="kw">False</span>)], []
+    <span class="kw">while</span> stack:
+        node, visited = stack.pop()
+        <span class="kw">if not</span> node: <span class="kw">continue</span>
+        <span class="kw">if</span> visited:
+            res.append(node.val)  <span class="cm"># second visit → process</span>
+        <span class="kw">else</span>:
+            <span class="cm"># Push self (to revisit) then children</span>
+            stack.append((node, <span class="kw">True</span>))
+            stack.append((node.right, <span class="kw">False</span>))
+            stack.append((node.left, <span class="kw">False</span>))
+    <span class="kw">return</span> res</pre></div>
+</div></div>
+
+<div class="card" data-cat="rec" data-kw="recursion patterns template decision tree include exclude two choices">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Recursion decision tree — all major patterns</span><div class="card-meta"><span class="badge bg-o">reference</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="tip-box"><span class="tip-label">How to structure any recursive solution</span>
+<strong>Step 1 — Identify the subproblem.</strong> What is one recursive call computing? "Returns the max path sum from this node downward." Be precise.<br><br>
+<strong>Step 2 — Write the base case first.</strong> Empty/null/zero/index-out-of-bounds. Get it wrong and you get infinite recursion.<br><br>
+<strong>Step 3 — Assume correctness, combine.</strong> If <code>dp(i)</code> returns the right answer for smaller inputs, how do you use it for <code>dp(i-1)</code>, <code>dp(i-2)</code> etc.?<br><br>
+<strong>Step 4 — Decide the return vs side effect trade-off.</strong> Return values = clean and composable. Side effects via <code>self.x</code> or <code>nonlocal</code> = simpler when you just need a running total.
+</div>
+<div class="block"><div class="lbl">Pattern map — pick the right skeleton</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># 1. LINEAR — one recursive call, reducing index/node</span>
+<span class="kw">def</span> <span class="fn">f</span>(i): <span class="kw">return</span> base <span class="kw">if</span> i==end <span class="kw">else</span> work + f(i+<span class="dc">1</span>)
+
+<span class="cm"># 2. BINARY TREE — two recursive calls</span>
+<span class="kw">def</span> <span class="fn">f</span>(node): <span class="kw">return</span> base <span class="kw">if not</span> node <span class="kw">else</span> combine(f(node.left), f(node.right))
+
+<span class="cm"># 3. INCLUDE / EXCLUDE — two choices at each step</span>
+<span class="kw">def</span> <span class="fn">f</span>(i): <span class="kw">return</span> max(skip(f(i+<span class="dc">1</span>)), take(nums[i]+f(i+<span class="dc">2</span>)))
+
+<span class="cm"># 4. BACKTRACKING — choose → explore → unchoose</span>
+<span class="kw">def</span> <span class="fn">bt</span>(i, path):
+    <span class="kw">if</span> done: results.append(path[:]); <span class="kw">return</span>
+    <span class="kw">for</span> c <span class="kw">in</span> choices(i):
+        path.append(c); bt(i+<span class="dc">1</span>, path); path.pop()
+
+<span class="cm"># 5. DIVIDE & CONQUER — split in half, merge</span>
+<span class="kw">def</span> <span class="fn">f</span>(arr):
+    <span class="kw">if</span> small: <span class="kw">return</span> base
+    mid = <span class="fn">len</span>(arr)//<span class="dc">2</span>
+    <span class="kw">return</span> merge(f(arr[:mid]), f(arr[mid:]))
+
+<span class="cm"># 6. MEMOIZED (top-down DP) — linear or 2D</span>
+@cache
+<span class="kw">def</span> <span class="fn">f</span>(i, j): <span class="kw">return</span> base <span class="kw">if</span> edge <span class="kw">else</span> recurrence(f(i-<span class="dc">1</span>,j), f(i,j-<span class="dc">1</span>))</pre></div>
+</div></div>
+
+<div id="nr" class="nr" style="display:none">No sections match — try a different search term.</div>
+</main>
+
+<script>
+function tog(h){
+  const card=h.closest('.card');
+  const b=h.nextElementSibling,a=h.querySelector('.arrow');
+  const opening=!b.classList.contains('open');
+  b.classList.toggle('open',opening);
+  a.classList.toggle('open',opening);
+  card.classList.toggle('expanded',opening);
+}
+function c(btn){
+  navigator.clipboard.writeText(btn.parentElement.querySelector('pre').innerText).then(()=>{
+    btn.textContent='copied!';
+    setTimeout(()=>btn.textContent='copy',1500);
+  });
+}
+function toggleMastery(cb){
+  const card=cb.closest('.card');
+  card.classList.toggle('mastered',cb.checked);
+  saveMastery();
+  updateCount();
+}
+function saveMastery(){
+  const m={};
+  document.querySelectorAll('.mastery-cb').forEach(cb=>{
+    if(cb.checked) m[cb.closest('.card').dataset.id]=true;
+  });
+  localStorage.setItem('lcprep-mastery',JSON.stringify(m));
+}
+function loadMastery(){
+  const data=JSON.parse(localStorage.getItem('lcprep-mastery')||'{}');
+  document.querySelectorAll('.card').forEach(card=>{
+    if(data[card.dataset.id]){
+      const cb=card.querySelector('.mastery-cb');
+      if(cb){cb.checked=true;card.classList.add('mastered');}
+    }
+  });
+}
+function updateCount(){
+  const all=document.querySelectorAll('.card');
+  const total=all.length;
+  let visible=0;
+  all.forEach(c=>{if(c.style.display!=='none')visible++;});
+  const mastered=document.querySelectorAll('.card.mastered').length;
+  document.getElementById('card-count').textContent=
+    'Showing '+visible+'/'+total+' cards ('+mastered+' mastered)';
+}
+document.querySelectorAll('.tabs .tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tabs .tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    filt(t.dataset.cat, document.getElementById('search').value.toLowerCase());
+  });
+});
+document.getElementById('search').addEventListener('input',e=>{
+  filt(document.querySelector('.tabs .tab.active').dataset.cat, e.target.value.toLowerCase());
+});
+document.getElementById('toggle-all').addEventListener('click',function(){
+  const visible=[...document.querySelectorAll('.card')].filter(c=>c.style.display!=='none');
+  const allOpen=visible.every(c=>c.querySelector('.card-body').classList.contains('open'));
+  visible.forEach(c=>{
+    const b=c.querySelector('.card-body'),a=c.querySelector('.arrow');
+    b.classList.toggle('open',!allOpen);
+    a.classList.toggle('open',!allOpen);
+    c.classList.toggle('expanded',!allOpen);
+  });
+  this.textContent=allOpen?'Expand All':'Collapse All';
+});
+function filt(cat,q){
+  let v=0;
+  document.querySelectorAll('.card').forEach(c=>{
+    const cm=cat==='all'||c.dataset.cat===cat;
+    const kw=(c.dataset.kw||'')+(c.querySelector('.card-title')?.textContent||'');
+    const show=cm&&(!q||kw.toLowerCase().includes(q));
+    c.style.display=show?'':'none';
+    if(show)v++;
+  });
+  document.getElementById('nr').style.display=v?'none':'';
+  updateCount();
+  document.getElementById('toggle-all').textContent='Expand All';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+  if(e.key==='Escape') document.getElementById('search').blur();
+});
+(function init(){
+  document.querySelectorAll('.card').forEach(card=>{
+    if(!card.dataset.id){
+      const title=card.querySelector('.card-title').textContent;
+      card.dataset.id=title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    }
+    const meta=card.querySelector('.card-meta');
+    const arrow=meta.querySelector('.arrow');
+    const lbl=document.createElement('label');
+    lbl.className='mastery-lbl';
+    lbl.title='Mark as mastered';
+    const cb=document.createElement('input');
+    cb.type='checkbox';
+    cb.className='mastery-cb';
+    cb.onclick=function(e){e.stopPropagation();toggleMastery(this);};
+    lbl.appendChild(cb);
+    meta.insertBefore(lbl,arrow);
+  });
+  loadMastery();
+  updateCount();
+})();
+</script>
+</body>
+</html>
