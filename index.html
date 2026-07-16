@@ -2218,6 +2218,158 @@ lock = threading.Lock()
 </div>
 </div></div>
 
+<div class="card" data-cat="lld" data-kw="solid principles single responsibility open closed liskov substitution interface segregation dependency inversion injection ood object oriented design">
+<div class="card-head" onclick="tog(this)"><span class="card-title">SOLID principles</span><div class="card-meta"><span class="badge bg-p">OOD</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">SOLID is five principles for OOP that all push the same way: <strong>small units that depend on abstractions, so a change stays local</strong> instead of rippling. In interviews the two that come up most are <strong>Single Responsibility</strong> ("why is this class doing two jobs?") and <strong>Dependency Inversion</strong> ("inject that, don't hard-wire it"). Name the principle you're applying out loud — it signals intent.</div>
+<div class="tip-box"><span class="tip-label">The five, crisply</span>
+<strong>S — Single Responsibility</strong> — one reason to change per class; if describing it needs "and", split it.<br>
+<strong>O — Open/Closed</strong> — open to extension, closed to modification; add a new subclass, don't edit working code.<br>
+<strong>L — Liskov Substitution</strong> — any subclass must be usable everywhere its base is, without surprising the caller (no strengthened preconditions, no weakened guarantees).<br>
+<strong>I — Interface Segregation</strong> — many small focused interfaces beat one fat one; don't force a class to implement methods it doesn't use.<br>
+<strong>D — Dependency Inversion</strong> — depend on abstractions (Protocol/ABC), not concrete classes; pass dependencies in rather than constructing them inside.
+</div>
+<div class="two">
+<div class="block"><div class="lbl">Dependency Inversion — inject the abstraction</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># BEFORE — high-level class hard-wired to a concrete detail</span>
+<span class="kw">class</span> <span class="fn">OrderService</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.store = PostgresStore()   <span class="cm"># can't swap, can't test without a real DB</span>
+
+<span class="cm"># AFTER — depend on an abstraction, inject the concrete one</span>
+<span class="kw">class</span> <span class="fn">OrderService</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, store: Repository):  <span class="cm"># a Protocol/ABC, not a concrete type</span>
+        self.store = store             <span class="cm"># any Repository works — swap freely, fake in tests</span></pre></div>
+<div class="block"><div class="lbl">Open/Closed — extend without editing</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Adding a shape needs a NEW class, not an edit to existing logic</span>
+<span class="kw">class</span> <span class="fn">Shape</span>(ABC):
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">area</span>(self) -> <span class="fn">float</span>: ...
+
+<span class="kw">class</span> <span class="fn">Circle</span>(Shape):
+    <span class="kw">def</span> <span class="fn">area</span>(self): <span class="kw">return</span> <span class="dc">3.14159</span> * self.r ** <span class="dc">2</span>
+
+<span class="kw">def</span> <span class="fn">total_area</span>(shapes: <span class="fn">list</span>[Shape]) -> <span class="fn">float</span>:
+    <span class="kw">return</span> <span class="fn">sum</span>(s.area() <span class="kw">for</span> s <span class="kw">in</span> shapes)  <span class="cm"># never changes when you add a shape</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="design patterns creational structural factory builder singleton adapter facade abstract factory">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Design patterns — creational &amp; structural</span><div class="card-meta"><span class="badge bg-b">patterns</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Patterns are named, reusable solutions to recurring design problems — the value in an interview is <strong>recognizing which one fits and naming it</strong>. <em>Creational</em> patterns control how objects are made; <em>structural</em> patterns compose objects into larger structures. Don't force them — a pattern used where a plain function would do is a red flag.</div>
+<div class="two">
+<div class="block"><div class="lbl">Factory &amp; Singleton (creational)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># FACTORY — centralize creation; pick the concrete type at runtime</span>
+<span class="kw">class</span> <span class="fn">ShapeFactory</span>:
+    @staticmethod
+    <span class="kw">def</span> <span class="fn">create</span>(kind: <span class="fn">str</span>) -> Shape:
+        <span class="kw">return</span> {<span class="st">"circle"</span>: Circle, <span class="st">"square"</span>: Square}[kind]()
+
+<span class="cm"># SINGLETON — one shared instance (use sparingly — often a smell)</span>
+<span class="kw">class</span> <span class="fn">Config</span>:
+    _instance = <span class="kw">None</span>
+    <span class="kw">def</span> <span class="fn">__new__</span>(cls):
+        <span class="kw">if</span> cls._instance <span class="kw">is</span> <span class="kw">None</span>:
+            cls._instance = super().__new__(cls)
+        <span class="kw">return</span> cls._instance
+<span class="cm"># In Python a MODULE is already a singleton — usually the better answer</span></pre></div>
+<div class="block"><div class="lbl">Adapter &amp; Facade (structural)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># ADAPTER — make an incompatible interface fit the one you expect</span>
+<span class="kw">class</span> <span class="fn">PrinterAdapter</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, legacy): self._legacy = legacy
+    <span class="kw">def</span> <span class="fn">render</span>(self, text):            <span class="cm"># the interface your code wants</span>
+        self._legacy.print_legacy(text)  <span class="cm"># translate to what the old API has</span>
+
+<span class="cm"># FACADE — one simple entry point over a complicated subsystem</span>
+<span class="kw">class</span> <span class="fn">OrderFacade</span>:
+    <span class="kw">def</span> <span class="fn">place</span>(self, cart):
+        self._inventory.reserve(cart)
+        self._payment.charge(cart)
+        self._shipping.schedule(cart)    <span class="cm"># caller sees one method, not three systems</span></pre></div>
+</div>
+<div class="note" style="margin-top:10px"><strong>Builder</strong> — when an object needs many optional pieces, assemble it step by step (<code>Query().where(...).order_by(...).build()</code>) instead of a constructor with a dozen arguments. Fluent method chaining (each method <code>return self</code>) is the usual Python form.</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="design patterns behavioral strategy observer state command pub sub callback undo redo finite state machine">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Design patterns — behavioral</span><div class="card-meta"><span class="badge bg-g">patterns</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Behavioral patterns are about <strong>how objects collaborate and where responsibility lives</strong>. These four cover most interview scenarios — and each one is really "replace a growing <code>if/elif</code> ladder or a hard-coded choice with polymorphism."</div>
+<div class="two">
+<div class="block"><div class="lbl">Strategy &amp; Observer</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># STRATEGY — swap an algorithm at runtime via a shared interface</span>
+<span class="kw">class</span> <span class="fn">SortStrategy</span>(Protocol):
+    <span class="kw">def</span> <span class="fn">sort</span>(self, data: <span class="fn">list</span>) -> <span class="fn">list</span>: ...
+
+<span class="kw">class</span> <span class="fn">Sorter</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, strategy: SortStrategy):
+        self._strategy = strategy
+    <span class="kw">def</span> <span class="fn">run</span>(self, data):
+        <span class="kw">return</span> self._strategy.sort(data)  <span class="cm"># behavior injected, not hard-coded</span>
+
+<span class="cm"># OBSERVER — subscribers react to a subject's changes (pub/sub)</span>
+<span class="kw">class</span> <span class="fn">Subject</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self): self._subs = []
+    <span class="kw">def</span> <span class="fn">subscribe</span>(self, fn): self._subs.append(fn)
+    <span class="kw">def</span> <span class="fn">notify</span>(self, event):
+        <span class="kw">for</span> fn <span class="kw">in</span> self._subs: fn(event)  <span class="cm"># push updates to all listeners</span></pre></div>
+<div class="block"><div class="lbl">State &amp; Command</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># STATE — behavior changes with internal state; each state is a class</span>
+<span class="kw">class</span> <span class="fn">State</span>(ABC):
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">next</span>(self) -> <span class="st">"State"</span>: ...
+<span class="kw">class</span> <span class="fn">Red</span>(State):
+    <span class="kw">def</span> <span class="fn">next</span>(self): <span class="kw">return</span> Green()   <span class="cm"># transitions encapsulated per state</span>
+<span class="cm"># replaces a giant if/elif ladder on a "mode" string</span>
+
+<span class="cm"># COMMAND — wrap an action as an object: queue it, log it, undo it</span>
+<span class="kw">class</span> <span class="fn">Command</span>(ABC):
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">execute</span>(self): ...
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">undo</span>(self): ...          <span class="cm"># pairing execute/undo enables undo-redo stacks</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="exception handling error design eafp lbyl custom exception hierarchy raise from try except finally context manager fail fast">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Exception design — EAFP, hierarchies &amp; cleanup</span><div class="card-meta"><span class="badge bg-r">error handling</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python favors <strong>EAFP</strong> ("easier to ask forgiveness than permission") — attempt the operation, catch the failure — over <strong>LBYL</strong> ("look before you leap"). EAFP is more Pythonic and avoids check-then-act race conditions. Design a small <strong>exception hierarchy</strong> per subsystem so callers can catch at exactly the granularity they care about.</div>
+<div class="two">
+<div class="block"><div class="lbl">EAFP vs LBYL</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># LBYL — verbose and race-prone</span>
+<span class="kw">if</span> key <span class="kw">in</span> d:
+    value = d[key]      <span class="cm"># d could change between check and use (threaded)</span>
+<span class="kw">else</span>:
+    value = default
+
+<span class="cm"># EAFP — Pythonic, atomic, one lookup</span>
+<span class="kw">try</span>:
+    value = d[key]
+<span class="kw">except</span> KeyError:
+    value = default</pre></div>
+<div class="block"><div class="lbl">Custom hierarchy — catch broad or narrow</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">PaymentError</span>(Exception): ...        <span class="cm"># one base per subsystem</span>
+<span class="kw">class</span> <span class="fn">CardDeclined</span>(PaymentError): ...
+<span class="kw">class</span> <span class="fn">InsufficientFunds</span>(PaymentError): ...
+
+<span class="kw">try</span>:
+    charge(card)
+<span class="kw">except</span> InsufficientFunds:
+    prompt_topup()       <span class="cm"># handle the specific case</span>
+<span class="kw">except</span> PaymentError:
+    log_and_retry()      <span class="cm"># catch-all for the whole subsystem</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Rules that matter in review</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Catch narrow, raise specific — never a bare `except:`</span>
+<span class="cm"># (it swallows KeyboardInterrupt / SystemExit too)</span>
+
+<span class="cm"># Preserve the original cause when re-raising:</span>
+<span class="kw">try</span>:
+    charge(card)
+<span class="kw">except</span> GatewayTimeout <span class="kw">as</span> err:
+    <span class="kw">raise</span> PaymentError(<span class="st">"charge failed"</span>) <span class="kw">from</span> err  <span class="cm"># keeps the traceback chain</span>
+
+<span class="cm"># Cleanup belongs in finally / a context manager, not copy-pasted</span>
+<span class="cm"># into every except branch:</span>
+<span class="kw">with</span> open(path) <span class="kw">as</span> f:      <span class="cm"># file closed even if the body raises</span>
+    process(f)
+
+<span class="cm"># Fail fast: validate inputs at the boundary and raise a clear,</span>
+<span class="cm"># specific error — don't let bad data flow deep, then crash cryptically</span></pre></div>
+</div></div>
+
 <div class="card" data-cat="lld" data-kw="best practices clean code checklist single responsibility composition immutability naming type hints solid design review">
 <div class="card-head" onclick="tog(this)"><span class="card-title">Low-level design &amp; code quality checklist</span><div class="card-meta"><span class="badge bg-o">best practices</span><span class="arrow">▼</span></div></div>
 <div class="card-body">
