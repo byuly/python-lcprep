@@ -95,6 +95,7 @@
       <button class="tab" data-cat="tip">Gotchas &amp; tips</button>
       <button class="tab" data-cat="rec">Recursion</button>
       <button class="tab" data-cat="lld">Low-level design</button>
+      <button class="tab" data-cat="api">APIs &amp; async</button>
     </div>
     <button id="toggle-all" class="tab">Expand All</button>
     <span id="card-count"></span>
@@ -2230,6 +2231,310 @@ lock = threading.Lock()
 <strong>Depend on abstractions</strong> — accept a <code>Protocol</code>/ABC, not a concrete class, when a function just needs "something with <code>.foo()</code>".<br>
 <strong>Keep <code>__init__</code> cheap</strong> — no I/O, no heavy computation; use a <code>@classmethod</code> factory for expensive construction.<br>
 <strong>Fail fast, fail clearly</strong> — validate inputs early and raise a specific exception with a useful message, not a generic one deep in the call stack.
+</div>
+</div></div>
+
+<!-- ===== APIs & ASYNC ===== -->
+
+<div class="card" data-cat="api" data-kw="requests library http get post params json headers timeout session raise_for_status status code sync">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Sync HTTP calls — the <code>requests</code> library</span><div class="card-meta"><span class="badge bg-b">sync HTTP</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><code>requests</code> is the standard sync HTTP client. Always set a <strong>timeout</strong> — a hung server otherwise blocks forever — and call <code>raise_for_status()</code> instead of manually checking <code>status_code</code> everywhere. Reuse a <code>Session</code> across calls to the same host; it pools connections.</div>
+<div class="two">
+<div class="block"><div class="lbl">Core requests usage</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> requests
+
+resp = requests.get(
+    <span class="st">"https://api.example.com/users"</span>,
+    params={<span class="st">"page"</span>: <span class="dc">1</span>, <span class="st">"limit"</span>: <span class="dc">50</span>},
+    headers={<span class="st">"Authorization"</span>: f<span class="st">"Bearer {token}"</span>},
+    timeout=<span class="dc">5</span>,                      <span class="cm"># ALWAYS set a timeout</span>
+)
+resp.raise_for_status()             <span class="cm"># raises HTTPError on 4xx/5xx</span>
+data = resp.json()
+
+requests.post(url, json={<span class="st">"name"</span>: <span class="st">"x"</span>}, timeout=<span class="dc">5</span>)  <span class="cm"># json= encodes + sets header</span></pre></div>
+<div class="block"><div class="lbl">Session — reuse connections</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">with</span> requests.Session() <span class="kw">as</span> session:
+    session.headers.update({<span class="st">"Authorization"</span>: f<span class="st">"Bearer {token}"</span>})
+    <span class="kw">for</span> user_id <span class="kw">in</span> ids:
+        r = session.get(f<span class="st">"{base_url}/users/{user_id}"</span>, timeout=<span class="dc">5</span>)
+        r.raise_for_status()
+        process(r.json())
+
+<span class="cm"># Session keeps a connection pool alive across requests to the same</span>
+<span class="cm"># host — avoids the TCP + TLS handshake cost on every single call</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="async await coroutine event loop task asyncio create_task blocking call cooperative concurrency foundation">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Async/await fundamentals</span><div class="card-meta"><span class="badge bg-p">foundation</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><code>async def</code> defines a <strong>coroutine function</strong> — calling it returns a coroutine object, nothing runs yet. <code>await</code> suspends the current coroutine at an I/O point, handing control back to the <strong>event loop</strong> so other coroutines can run. This is single-threaded cooperative multitasking, not parallelism.</div>
+<div class="two">
+<div class="block"><div class="lbl">Coroutines vs. actually running them</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch</span>(url):
+    ...                       <span class="cm"># some awaited I/O inside</span>
+    <span class="kw">return</span> result
+
+coro = fetch(url)             <span class="cm"># just an object — nothing has run yet</span>
+result = <span class="kw">await</span> coro          <span class="cm"># NOW it runs, to completion or exception</span>
+
+<span class="cm"># Top-level entry point — starts the event loop</span>
+<span class="kw">import</span> asyncio
+result = asyncio.run(fetch(url))</pre></div>
+<div class="block"><div class="lbl">The #1 rule: never block the event loop</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">bad</span>():
+    time.sleep(<span class="dc">2</span>)             <span class="cm"># BLOCKS the whole loop — nothing else</span>
+                            <span class="cm"># can run for 2 seconds!</span>
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">good</span>():
+    <span class="kw">await</span> asyncio.sleep(<span class="dc">2</span>)   <span class="cm"># yields control back to the loop</span>
+
+<span class="cm"># Same rule for CPU-heavy work — offload it to a thread/process:</span>
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">cpu_heavy</span>():
+    loop = asyncio.get_running_loop()
+    <span class="kw">return</span> <span class="kw">await</span> loop.run_in_executor(<span class="kw">None</span>, blocking_cpu_fn, data)</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="asyncio gather create_task taskgroup concurrent requests fan out fan in return_exceptions httpx aiohttp">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Concurrent requests — <code>asyncio.gather</code> / TaskGroup</span><div class="card-meta"><span class="badge bg-g">fan-out</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Fire off many independent API calls concurrently instead of awaiting them one at a time — the win comes from overlapping I/O wait time, not parallel CPU work.</div>
+<div class="two">
+<div class="block"><div class="lbl">gather — the classic fan-out</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> asyncio, httpx
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch</span>(client, url):
+    r = <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)
+    r.raise_for_status()
+    <span class="kw">return</span> r.json()
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_all</span>(urls):
+    <span class="kw">async</span> <span class="kw">with</span> httpx.AsyncClient() <span class="kw">as</span> client:
+        tasks = [fetch(client, u) <span class="kw">for</span> u <span class="kw">in</span> urls]
+        <span class="kw">return</span> <span class="kw">await</span> asyncio.gather(*tasks)      <span class="cm"># runs all concurrently</span>
+
+<span class="cm"># A single failure propagates by default; pass return_exceptions=True</span>
+<span class="cm"># to get exceptions back as values instead of raising:</span>
+results = <span class="kw">await</span> asyncio.gather(*tasks, return_exceptions=<span class="kw">True</span>)</pre></div>
+<div class="block"><div class="lbl">create_task &amp; structured concurrency</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_all</span>(urls):
+    <span class="kw">async</span> <span class="kw">with</span> httpx.AsyncClient() <span class="kw">as</span> client:
+        <span class="cm"># create_task starts it eagerly — a bare coroutine only starts</span>
+        <span class="cm"># running once you actually await it</span>
+        tasks = [asyncio.create_task(fetch(client, u)) <span class="kw">for</span> u <span class="kw">in</span> urls]
+        <span class="kw">return</span> <span class="kw">await</span> asyncio.gather(*tasks)
+
+<span class="cm"># Python 3.11+ — cancels sibling tasks automatically if one errors</span>
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_all_tg</span>(urls):
+    <span class="kw">async</span> <span class="kw">with</span> httpx.AsyncClient() <span class="kw">as</span> client, asyncio.TaskGroup() <span class="kw">as</span> tg:
+        tasks = [tg.create_task(fetch(client, u)) <span class="kw">for</span> u <span class="kw">in</span> urls]
+    <span class="kw">return</span> [t.result() <span class="kw">for</span> t <span class="kw">in</span> tasks]</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="rate limit semaphore token bucket concurrency limit retry after throttle bounded concurrency">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Rate limiting &amp; bounded concurrency</span><div class="card-meta"><span class="badge bg-a">throttling</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Firing thousands of requests at once just gets you rate-limited (or banned). Bound concurrency with a <code>Semaphore</code>, and respect the server's own signals — <code>429</code> status, <code>Retry-After</code> header.</div>
+<div class="two">
+<div class="block"><div class="lbl">Semaphore — cap concurrent in-flight requests</div><button class="cp" onclick="c(this)">copy</button><pre>sem = asyncio.Semaphore(<span class="dc">10</span>)          <span class="cm"># at most 10 requests in flight</span>
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_bounded</span>(client, url):
+    <span class="kw">async</span> <span class="kw">with</span> sem:                  <span class="cm"># acquire; released automatically</span>
+        r = <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)
+        r.raise_for_status()
+        <span class="kw">return</span> r.json()
+
+results = <span class="kw">await</span> asyncio.gather(*(fetch_bounded(client, u) <span class="kw">for</span> u <span class="kw">in</span> urls))</pre></div>
+<div class="block"><div class="lbl">Respecting 429 / Retry-After</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_with_backoff</span>(client, url):
+    r = <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)
+    <span class="kw">if</span> r.status_code == <span class="dc">429</span>:
+        wait = <span class="fn">float</span>(r.headers.get(<span class="st">"Retry-After"</span>, <span class="dc">1</span>))
+        <span class="kw">await</span> asyncio.sleep(wait)
+        <span class="kw">return</span> <span class="kw">await</span> fetch_with_backoff(client, url)  <span class="cm"># retry, simplified</span>
+    r.raise_for_status()
+    <span class="kw">return</span> r.json()</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="retry exponential backoff jitter idempotent retryable error transient failure resilience">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Retries with exponential backoff</span><div class="card-meta"><span class="badge bg-g">resilience</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Only retry <strong>transient, idempotent-safe</strong> failures — timeouts, connection errors, 5xx, 429. Never blindly retry a plain 4xx (it'll fail identically) or a non-idempotent POST without an idempotency key. Add <strong>jitter</strong> so many clients don't retry in lockstep and stampede the server.</div>
+<div class="block"><div class="lbl">Exponential backoff with jitter</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> random, asyncio
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_with_retry</span>(client, url, max_attempts=<span class="dc">5</span>):
+    <span class="kw">for</span> attempt <span class="kw">in</span> range(max_attempts):
+        <span class="kw">try</span>:
+            r = <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)
+            <span class="kw">if</span> r.status_code >= <span class="dc">500</span> <span class="kw">or</span> r.status_code == <span class="dc">429</span>:
+                <span class="kw">raise</span> httpx.HTTPStatusError(<span class="st">"retryable"</span>, request=r.request, response=r)
+            r.raise_for_status()          <span class="cm"># non-429 4xx -> raises, no retry</span>
+            <span class="kw">return</span> r.json()
+        <span class="kw">except</span> (httpx.TimeoutException, httpx.HTTPStatusError):
+            <span class="kw">if</span> attempt == max_attempts - <span class="dc">1</span>:
+                <span class="kw">raise</span>
+            delay = (<span class="dc">2</span> ** attempt) + random.uniform(<span class="dc">0</span>, <span class="dc">1</span>)  <span class="cm"># backoff + jitter</span>
+            <span class="kw">await</span> asyncio.sleep(delay)</pre></div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="api client class design wrapper encapsulation custom exception base url auth retries typed response dependency injection">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Designing an API client wrapper</span><div class="card-meta"><span class="badge bg-b">class design</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Don't scatter <code>requests</code>/<code>httpx</code> calls throughout the codebase — wrap the API behind a small class. Callers get typed methods and a stable interface; you get one place to change auth, retries, and error handling.</div>
+<div class="block"><div class="lbl">A clean client wrapper</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">APIError</span>(Exception):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, status_code, message):
+        self.status_code = status_code
+        super().__init__(message)
+
+<span class="kw">class</span> <span class="fn">UserClient</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, base_url, token, client=<span class="kw">None</span>):
+        self._base_url = base_url.rstrip(<span class="st">"/"</span>)
+        self._headers = {<span class="st">"Authorization"</span>: f<span class="st">"Bearer {token}"</span>}
+        self._client = client <span class="kw">or</span> httpx.AsyncClient()  <span class="cm"># inject for testing</span>
+
+    <span class="kw">async</span> <span class="kw">def</span> <span class="fn">get_user</span>(self, user_id: <span class="fn">int</span>) -> <span class="fn">dict</span>:
+        r = <span class="kw">await</span> self._client.get(
+            f<span class="st">"{self._base_url}/users/{user_id}"</span>,
+            headers=self._headers, timeout=<span class="dc">5</span>,
+        )
+        <span class="kw">if</span> r.status_code == <span class="dc">404</span>:
+            <span class="kw">raise</span> APIError(<span class="dc">404</span>, f<span class="st">"user {user_id} not found"</span>)
+        r.raise_for_status()
+        <span class="kw">return</span> r.json()
+
+    <span class="kw">async</span> <span class="kw">def</span> <span class="fn">__aenter__</span>(self): <span class="kw">return</span> self
+    <span class="kw">async</span> <span class="kw">def</span> <span class="fn">__aexit__</span>(self, *exc): <span class="kw">await</span> self._client.aclose()
+
+<span class="kw">async</span> <span class="kw">with</span> UserClient(base_url, token) <span class="kw">as</span> client:
+    user = <span class="kw">await</span> client.get_user(<span class="dc">42</span>)   <span class="cm"># caller never touches httpx directly</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="pagination cursor offset next page generator async generator iterate all pages">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Pagination patterns</span><div class="card-meta"><span class="badge bg-t">pagination</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Hide pagination behind a generator so callers just iterate — they shouldn't need to know whether the API uses page numbers, offsets, or opaque cursors.</div>
+<div class="two">
+<div class="block"><div class="lbl">Sync generator over pages</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">iter_all_users</span>(client, base_url):
+    url = f<span class="st">"{base_url}/users"</span>
+    <span class="kw">while</span> url:
+        r = client.get(url, timeout=<span class="dc">5</span>)
+        r.raise_for_status()
+        payload = r.json()
+        <span class="kw">yield from</span> payload[<span class="st">"results"</span>]
+        url = payload.get(<span class="st">"next"</span>)     <span class="cm"># cursor-style: server gives the next URL</span>
+
+<span class="kw">for</span> user <span class="kw">in</span> iter_all_users(client, base_url):
+    process(user)                       <span class="cm"># caller doesn't know/care about paging</span></pre></div>
+<div class="block"><div class="lbl">Async generator — same idea, awaited</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">iter_all_users</span>(client, base_url):
+    url = f<span class="st">"{base_url}/users"</span>
+    <span class="kw">while</span> url:
+        r = <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)
+        r.raise_for_status()
+        payload = r.json()
+        <span class="kw">for</span> item <span class="kw">in</span> payload[<span class="st">"results"</span>]:
+            <span class="kw">yield</span> item
+        url = payload.get(<span class="st">"next"</span>)
+
+<span class="kw">async</span> <span class="kw">for</span> user <span class="kw">in</span> iter_all_users(client, base_url):
+    process(user)</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="timeout cancellation asyncio wait_for cancellederror deadline overall timeout">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Timeouts &amp; cancellation</span><div class="card-meta"><span class="badge bg-r">resilience</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Every network call needs <strong>both</strong> a per-request timeout (so one slow call can't hang forever) and often an overall deadline for a batch of work. <code>asyncio.wait_for</code> cancels the awaited coroutine if it overruns — handle <code>CancelledError</code>/<code>TimeoutError</code> where you can actually react, not deep inside a shared helper.</div>
+<div class="block"><div class="lbl">Per-call and overall timeouts</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> asyncio
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_one</span>(client, url):
+    <span class="kw">return</span> <span class="kw">await</span> client.get(url, timeout=<span class="dc">5</span>)   <span class="cm"># per-request timeout (httpx)</span>
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_batch</span>(client, urls):
+    <span class="kw">try</span>:
+        <span class="kw">return</span> <span class="kw">await</span> asyncio.wait_for(
+            asyncio.gather(*(fetch_one(client, u) <span class="kw">for</span> u <span class="kw">in</span> urls)),
+            timeout=<span class="dc">20</span>,                        <span class="cm"># overall deadline for the whole batch</span>
+        )
+    <span class="kw">except</span> asyncio.TimeoutError:
+        <span class="kw">return</span> []                              <span class="cm"># decide the fallback explicitly</span>
+
+<span class="cm"># A cancelled coroutine gets asyncio.CancelledError raised at its</span>
+<span class="cm"># current await point — clean up (locks, files) in a `finally`,</span>
+<span class="cm"># and re-raise unless you deliberately want to swallow it</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="building api server fastapi pydantic status codes idempotency key versioning request response model">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Building an API — request/response design</span><div class="card-meta"><span class="badge bg-o">server side</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">When you're the one <strong>building</strong> the API, the same discipline applies in reverse: typed request/response models, meaningful status codes, and idempotency for unsafe methods a client might retry.</div>
+<div class="two">
+<div class="block"><div class="lbl">Typed request/response models</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, HTTPException
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+
+app = FastAPI()
+
+<span class="kw">class</span> <span class="fn">CreateUser</span>(BaseModel):     <span class="cm"># validates the request body automatically</span>
+    name: <span class="fn">str</span>
+    email: <span class="fn">str</span>
+
+<span class="kw">class</span> <span class="fn">UserOut</span>(BaseModel):        <span class="cm"># controls exactly what's serialized back</span>
+    id: <span class="fn">int</span>
+    name: <span class="fn">str</span>
+
+@app.post(<span class="st">"/users"</span>, response_model=UserOut, status_code=<span class="dc">201</span>)
+<span class="kw">def</span> <span class="fn">create_user</span>(body: CreateUser):
+    <span class="kw">if</span> user_exists(body.email):
+        <span class="kw">raise</span> HTTPException(status_code=<span class="dc">409</span>, detail=<span class="st">"email already registered"</span>)
+    <span class="kw">return</span> save_user(body)</pre></div>
+<div class="block"><div class="lbl">Idempotency for unsafe methods</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># A client retrying a timed-out POST /orders could otherwise double-</span>
+<span class="cm"># charge the user. Let the client supply an idempotency key; dedupe:</span>
+
+@app.post(<span class="st">"/orders"</span>)
+<span class="kw">def</span> <span class="fn">create_order</span>(body: OrderIn, idempotency_key: <span class="fn">str</span> = Header(...)):
+    existing = orders_by_key.get(idempotency_key)
+    <span class="kw">if</span> existing:
+        <span class="kw">return</span> existing              <span class="cm"># same request replayed -> same result</span>
+    order = process_order(body)
+    orders_by_key[idempotency_key] = order
+    <span class="kw">return</span> order
+
+<span class="cm"># GET/PUT/DELETE are naturally idempotent by design — POST usually</span>
+<span class="cm"># isn't, which is exactly why this pattern exists for it</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="testing mock unittest mock responses library dependency injection fake http client no network">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Testing API code without hitting the network</span><div class="card-meta"><span class="badge bg-t">testability</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Never let tests make real network calls — they get slow and flaky. Inject the HTTP client (as in the wrapper class above) so tests can swap in a fake.</div>
+<div class="block"><div class="lbl">Mocking with a fake client</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">FakeResponse</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, json_data, status_code=<span class="dc">200</span>):
+        self._json = json_data
+        self.status_code = status_code
+    <span class="kw">def</span> <span class="fn">json</span>(self): <span class="kw">return</span> self._json
+    <span class="kw">def</span> <span class="fn">raise_for_status</span>(self):
+        <span class="kw">if</span> self.status_code >= <span class="dc">400</span>: <span class="kw">raise</span> Exception(<span class="st">"HTTP error"</span>)
+
+<span class="kw">class</span> <span class="fn">FakeClient</span>:
+    <span class="kw">async</span> <span class="kw">def</span> <span class="fn">get</span>(self, url, **kwargs):
+        <span class="kw">return</span> FakeResponse({<span class="st">"id"</span>: <span class="dc">42</span>, <span class="st">"name"</span>: <span class="st">"Ada"</span>})
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">test_get_user</span>():
+    client = UserClient(<span class="st">"https://api.test"</span>, <span class="st">"tok"</span>, client=FakeClient())
+    user = <span class="kw">await</span> client.get_user(<span class="dc">42</span>)
+    <span class="kw">assert</span> user[<span class="st">"name"</span>] == <span class="st">"Ada"</span>       <span class="cm"># no real network call made</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="api" data-kw="api design checklist best practices async await review consuming building">
+<div class="card-head" onclick="tog(this)"><span class="card-title">API integration checklist</span><div class="card-meta"><span class="badge bg-o">best practices</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="tip-box"><span class="tip-label">Before you ship an API integration</span>
+Always set a <strong>timeout</strong> on every call — a hung server should never hang your program.<br>
+Never call blocking I/O (<code>requests</code>, <code>time.sleep</code>, blocking DB drivers) inside <code>async def</code> — it stalls the whole event loop.<br>
+Bound concurrency with a <code>Semaphore</code> rather than firing every request at once.<br>
+Retry only transient, idempotent-safe failures — with backoff + jitter and a max-attempt cap.<br>
+Wrap the API behind a client class — one seam to change auth/retries/error handling, and to inject a fake in tests.<br>
+Model responses with real types (dataclass/pydantic), not raw dicts threaded through the whole codebase.<br>
+Close what you open — use <code>async with</code> / context managers for sessions and clients so connections don't leak.<br>
+Building the API yourself? Make writes idempotent, return meaningful status codes, and version the contract before you need to break it.
 </div>
 </div></div>
 
