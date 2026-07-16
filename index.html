@@ -559,7 +559,7 @@ q = deque([(start, <span class="dc">0</span>)])     <span class="cm"># (node, di
         <span class="kw">if</span> nei <span class="kw">not in</span> visited:
             visited.add(nei)
             q.append((nei, d+<span class="dc">1</span>))</pre></div>
-<div class="block"><div class="lbl">DFS (recursive)</div><button class="cp" onclick="c(this)">copy</button><pre">visited = <span class="fn">set</span>()
+<div class="block"><div class="lbl">DFS (recursive)</div><button class="cp" onclick="c(this)">copy</button><pre>visited = <span class="fn">set</span>()
 <span class="kw">def</span> <span class="fn">dfs</span>(node):
     visited.add(node)
     <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
