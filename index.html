@@ -1732,6 +1732,54 @@ c.area             <span class="cm"># computed on access, no stored field</span>
 </div>
 </div></div>
 
+<div class="card" data-cat="lld" data-kw="class attribute field declaration type annotation hint colon decorator instance variable class variable dataclass no int radius java difference">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Class attributes &amp; type annotations</span><div class="card-meta"><span class="badge bg-a">no field decls</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python has <strong>no field declarations</strong> like Java's <code>int radius;</code> — an attribute springs into existence the moment you assign it (usually <code>self.x = ...</code> in <code>__init__</code>). You <em>can</em> add a type <strong>annotation</strong> with the colon syntax (<code>radius: float</code>), but it's a hint only — the interpreter never enforces it. Don't confuse it with a <strong>decorator</strong>: <code>: type</code> is an annotation, <code>@name</code> is a decorator — completely different things.</div>
+<div class="two">
+<div class="block"><div class="lbl">Attributes are created by assignment</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius):
+        self.radius = radius        <span class="cm"># attribute created HERE, on assignment</span>
+        <span class="cm"># no `int radius;` declaration — not needed, not possible</span>
+
+<span class="cm"># Optional annotation — colon syntax, a hint for humans + tools only:</span>
+<span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius: <span class="fn">float</span>):
+        self.radius: <span class="fn">float</span> = radius   <span class="cm"># `: float` documents intent</span>
+
+c = Circle(<span class="st">"oops"</span>)              <span class="cm"># runs fine — annotation NOT enforced at runtime</span></pre></div>
+<div class="block"><div class="lbl">Class variable vs instance variable</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Config</span>:
+    name: <span class="fn">str</span>          <span class="cm"># bare annotation — creates NO attribute,</span>
+                     <span class="cm"># just a hint. Config.name -> AttributeError</span>
+    count: <span class="fn">int</span> = <span class="dc">0</span>     <span class="cm"># the `= 0` DOES create a real class variable</span>
+
+<span class="kw">class</span> <span class="fn">Dog</span>:
+    species = <span class="st">"canine"</span>   <span class="cm"># class var — ONE copy, shared by all instances</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name):
+        self.name = name  <span class="cm"># instance var — one per object</span>
+
+<span class="cm"># Trap: a mutable class var (e.g. `items = []`) is shared across</span>
+<span class="cm"># every instance — mutating it on one shows up on all of them</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Annotation (:) vs decorator (@), and where annotations become real fields</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># `name: type` is an ANNOTATION — a type hint, enforced by NOTHING at runtime</span>
+radius: <span class="fn">float</span>
+<span class="kw">def</span> <span class="fn">f</span>(x: <span class="fn">int</span>) -> <span class="fn">str</span>: ...
+
+<span class="cm"># `@name` is a DECORATOR — a function that wraps the thing below it</span>
+@property
+@staticmethod
+@dataclass
+
+<span class="cm"># @dataclass READS the annotations to auto-generate __init__ + fields —</span>
+<span class="cm"># this is the one place a class-level annotation DOES define a field:</span>
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+@dataclass
+<span class="kw">class</span> <span class="fn">Circle</span>:
+    radius: <span class="fn">float</span>          <span class="cm"># becomes an __init__ parameter + instance field</span>
+    color: <span class="fn">str</span> = <span class="st">"red"</span>      <span class="cm"># with a default</span>
+c = Circle(<span class="dc">5</span>)               <span class="cm"># __init__(self, radius, color="red") generated for you</span></pre></div>
+</div></div>
+
 <div class="card" data-cat="lld" data-kw="inheritance composition super multiple inheritance mro method resolution order classmethod staticmethod alternate constructor">
 <div class="card-head" onclick="tog(this)"><span class="card-title">Class design — composition, inheritance &amp; MRO</span><div class="card-meta"><span class="badge bg-b">class design</span><span class="arrow">▼</span></div></div>
 <div class="card-body">
