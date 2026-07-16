@@ -94,6 +94,7 @@
       <button class="tab" data-cat="py">Python tricks</button>
       <button class="tab" data-cat="tip">Gotchas &amp; tips</button>
       <button class="tab" data-cat="rec">Recursion</button>
+      <button class="tab" data-cat="lld">Low-level design</button>
     </div>
     <button id="toggle-all" class="tab">Expand All</button>
     <span id="card-count"></span>
@@ -1687,6 +1688,549 @@ When <code>@cache</code>/<code>@lru_cache</code> decorates a nested function, it
 <span class="cm"># 6. MEMOIZED (top-down DP) — linear or 2D</span>
 @cache
 <span class="kw">def</span> <span class="fn">f</span>(i, j): <span class="kw">return</span> base <span class="kw">if</span> edge <span class="kw">else</span> recurrence(f(i-<span class="dc">1</span>,j), f(i,j-<span class="dc">1</span>))</pre></div>
+</div></div>
+
+<!-- ===== LOW-LEVEL PROGRAMMING ===== -->
+
+<div class="card" data-cat="lld" data-kw="private protected public underscore name mangling property getter setter encapsulation access modifier dunder">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Access control &amp; encapsulation</span><div class="card-meta"><span class="badge bg-a">no true privacy</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python has <strong>no enforced access control</strong> — it relies on convention ("we're all consenting adults"). <code>_name</code> signals "internal, don't touch" but stays fully accessible. <code>__name</code> triggers <strong>name mangling</strong> to <code>_ClassName__name</code>, mainly to avoid subclass attribute clashes — not real privacy. Prefer <code>@property</code> over manual getters/setters for controlled access.</div>
+<div class="two">
+<div class="block"><div class="lbl">Naming conventions</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Account</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, balance):
+        self.balance = balance         <span class="cm"># public — no restriction</span>
+        self._history = []             <span class="cm"># _protected — convention only</span>
+        self.__pin = <span class="st">"1234"</span>            <span class="cm"># __private — name-mangled</span>
+
+acct = Account(<span class="dc">100</span>)
+acct._history                     <span class="cm"># works fine, just a "don't" signal</span>
+acct.__pin                        <span class="cm"># AttributeError!</span>
+acct._Account__pin                <span class="cm"># works — mangling isn't security</span></pre></div>
+<div class="block"><div class="lbl">property — Pythonic getters/setters</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Circle</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, radius):
+        self._radius = radius
+
+    @property
+    <span class="kw">def</span> <span class="fn">radius</span>(self):
+        <span class="kw">return</span> self._radius
+
+    @radius.setter
+    <span class="kw">def</span> <span class="fn">radius</span>(self, value):
+        <span class="kw">if</span> value &lt; <span class="dc">0</span>:
+            <span class="kw">raise</span> ValueError(<span class="st">"radius must be >= 0"</span>)
+        self._radius = value
+
+    @property
+    <span class="kw">def</span> <span class="fn">area</span>(self):          <span class="cm"># computed, read-only</span>
+        <span class="kw">return</span> <span class="dc">3.14159</span> * self._radius ** <span class="dc">2</span>
+
+c = Circle(<span class="dc">5</span>)
+c.radius = <span class="dc">10</span>      <span class="cm"># calls the setter, validates</span>
+c.area             <span class="cm"># computed on access, no stored field</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="inheritance composition super multiple inheritance mro method resolution order classmethod staticmethod alternate constructor">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Class design — composition, inheritance &amp; MRO</span><div class="card-meta"><span class="badge bg-b">class design</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Prefer <strong>composition over inheritance</strong> unless there's a genuine is-a relationship — inheritance couples a subclass to its parent's implementation details. <code>super()</code> follows the <strong>MRO</strong> (C3 linearization), not just "the direct parent" — this matters as soon as you have multiple inheritance.</div>
+<div class="two">
+<div class="block"><div class="lbl">Composition vs inheritance</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Inheritance — is-a relationship</span>
+<span class="kw">class</span> <span class="fn">Animal</span>:
+    <span class="kw">def</span> <span class="fn">speak</span>(self): <span class="kw">return</span> <span class="st">"..."</span>
+<span class="kw">class</span> <span class="fn">Dog</span>(Animal):
+    <span class="kw">def</span> <span class="fn">speak</span>(self): <span class="kw">return</span> <span class="st">"Woof"</span>
+
+<span class="cm"># Composition — has-a relationship (usually more flexible)</span>
+<span class="kw">class</span> <span class="fn">Engine</span>:
+    <span class="kw">def</span> <span class="fn">start</span>(self): <span class="kw">return</span> <span class="st">"vroom"</span>
+<span class="kw">class</span> <span class="fn">Car</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.engine = Engine()       <span class="cm"># Car HAS an engine</span>
+    <span class="kw">def</span> <span class="fn">start</span>(self):
+        <span class="kw">return</span> self.engine.start()  <span class="cm"># delegate, don't inherit</span></pre></div>
+<div class="block"><div class="lbl">classmethod vs staticmethod vs instance method</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Pizza</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, toppings):
+        self.toppings = toppings
+
+    <span class="kw">def</span> <span class="fn">describe</span>(self):        <span class="cm"># instance method — needs self</span>
+        <span class="kw">return</span> f<span class="st">"Pizza with {self.toppings}"</span>
+
+    @classmethod
+    <span class="kw">def</span> <span class="fn">margherita</span>(cls):       <span class="cm"># alt constructor — gets the class</span>
+        <span class="kw">return</span> cls([<span class="st">"tomato"</span>, <span class="st">"basil"</span>])
+
+    @staticmethod
+    <span class="kw">def</span> <span class="fn">is_valid_topping</span>(t): <span class="cm"># no self/cls — namespaced utility</span>
+        <span class="kw">return</span> t <span class="kw">in</span> {<span class="st">"cheese"</span>, <span class="st">"basil"</span>, <span class="st">"pepperoni"</span>}
+
+Pizza.margherita()                  <span class="cm"># factory pattern</span>
+Pizza.is_valid_topping(<span class="st">"kale"</span>)      <span class="cm"># False</span></pre></div>
+</div>
+<div class="block"><div class="lbl">super() &amp; the MRO (method resolution order)</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">A</span>:
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="st">"A"</span>
+<span class="kw">class</span> <span class="fn">B</span>(A):
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="st">"B->"</span> + super().greet()
+<span class="kw">class</span> <span class="fn">C</span>(A):
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="st">"C->"</span> + super().greet()
+<span class="kw">class</span> <span class="fn">D</span>(B, C):
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="st">"D->"</span> + super().greet()
+
+D().greet()          <span class="cm"># "D->B->C->A" — follows MRO, not naive parent-first</span>
+<span class="fn">print</span>(D.__mro__)     <span class="cm"># (D, B, C, A, object) — C3 linearization</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="dunder magic methods repr str eq hash lt operator overloading iter next contains len call protocol">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Dunder methods &amp; operator overloading</span><div class="card-meta"><span class="badge bg-p">protocol</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Dunder methods are how custom objects plug into built-in syntax (<code>+</code>, <code>len()</code>, <code>in</code>, <code>for</code>) and functions (<code>sorted()</code>, <code>heapq</code>). <strong><code>__eq__</code> and <code>__hash__</code> must agree</strong> — equal objects must hash equal, or the object silently breaks in sets/dicts.</div>
+<div class="two">
+<div class="block"><div class="lbl">Core dunders for interview-grade classes</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Point</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, x, y):
+        self.x, self.y = x, y
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self):              <span class="cm"># debug repr — unambiguous</span>
+        <span class="kw">return</span> f<span class="st">"Point({self.x}, {self.y})"</span>
+
+    <span class="kw">def</span> <span class="fn">__eq__</span>(self, other):
+        <span class="kw">return</span> (self.x, self.y) == (other.x, other.y)
+
+    <span class="kw">def</span> <span class="fn">__hash__</span>(self):              <span class="cm"># required if you define __eq__</span>
+        <span class="kw">return</span> hash((self.x, self.y))  <span class="cm"># and want it in a set/dict key</span>
+
+    <span class="kw">def</span> <span class="fn">__lt__</span>(self, other):         <span class="cm"># enables sorted() / heapq</span>
+        <span class="kw">return</span> (self.x, self.y) &lt; (other.x, other.y)
+
+    <span class="kw">def</span> <span class="fn">__add__</span>(self, other):        <span class="cm"># operator overloading: p1 + p2</span>
+        <span class="kw">return</span> Point(self.x + other.x, self.y + other.y)</pre></div>
+<div class="block"><div class="lbl">Container &amp; callable protocols</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Vector</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, data):
+        self.data = data
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(self):             <span class="cm"># enables len(v)</span>
+        <span class="kw">return</span> <span class="fn">len</span>(self.data)
+
+    <span class="kw">def</span> <span class="fn">__getitem__</span>(self, i):        <span class="cm"># enables v[i], slicing, iteration</span>
+        <span class="kw">return</span> self.data[i]
+
+    <span class="kw">def</span> <span class="fn">__contains__</span>(self, x):       <span class="cm"># enables `x in v`</span>
+        <span class="kw">return</span> x <span class="kw">in</span> self.data
+
+    <span class="kw">def</span> <span class="fn">__iter__</span>(self):            <span class="cm"># explicit iterator protocol</span>
+        <span class="kw">return</span> <span class="fn">iter</span>(self.data)
+
+    <span class="kw">def</span> <span class="fn">__call__</span>(self, scale):      <span class="cm"># enables v(2) — makes it callable</span>
+        <span class="kw">return</span> Vector([x * scale <span class="kw">for</span> x <span class="kw">in</span> self.data])</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="abstract base class abc abstractmethod protocol structural typing dataclass frozen slots immutable field default factory">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Abstract base classes, Protocols &amp; dataclasses</span><div class="card-meta"><span class="badge bg-t">interfaces</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><code>abc.ABC</code> gives <strong>nominal</strong> interfaces (must subclass to count). <code>typing.Protocol</code> gives <strong>structural</strong> typing — duck typing, formalized: any object with the right shape qualifies, no inheritance needed. <code>@dataclass</code> removes <code>__init__</code>/<code>__repr__</code>/<code>__eq__</code> boilerplate; <code>frozen=True</code> makes instances immutable and hashable.</div>
+<div class="two">
+<div class="block"><div class="lbl">ABC — enforce a contract</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">Shape</span>(ABC):
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">area</span>(self) -> <span class="fn">float</span>: ...
+    @abstractmethod
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self) -> <span class="fn">float</span>: ...
+
+<span class="kw">class</span> <span class="fn">Circle</span>(Shape):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, r): self.r = r
+    <span class="kw">def</span> <span class="fn">area</span>(self): <span class="kw">return</span> <span class="dc">3.14159</span> * self.r ** <span class="dc">2</span>
+    <span class="kw">def</span> <span class="fn">perimeter</span>(self): <span class="kw">return</span> <span class="dc">2</span> * <span class="dc">3.14159</span> * self.r
+
+Shape()      <span class="cm"># TypeError — can't instantiate an abstract class</span></pre></div>
+<div class="block"><div class="lbl">Protocol — structural typing</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> typing <span class="kw">import</span> Protocol
+
+<span class="kw">class</span> <span class="fn">Drawable</span>(Protocol):
+    <span class="kw">def</span> <span class="fn">draw</span>(self) -> <span class="kw">None</span>: ...
+
+<span class="kw">def</span> <span class="fn">render</span>(item: Drawable) -> <span class="kw">None</span>:
+    item.draw()          <span class="cm"># anything with .draw() works — no inheritance</span>
+
+<span class="kw">class</span> <span class="fn">Square</span>:              <span class="cm"># NOT a subclass of Drawable!</span>
+    <span class="kw">def</span> <span class="fn">draw</span>(self): <span class="fn">print</span>(<span class="st">"square"</span>)
+
+render(Square())           <span class="cm"># valid — matches the Protocol's shape</span></pre></div>
+</div>
+<div class="two">
+<div class="block"><div class="lbl">dataclass — remove boilerplate</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+
+@dataclass(frozen=<span class="kw">True</span>)          <span class="cm"># frozen = immutable + hashable</span>
+<span class="kw">class</span> <span class="fn">Point</span>:
+    x: <span class="fn">int</span>
+    y: <span class="fn">int</span>
+
+@dataclass
+<span class="kw">class</span> <span class="fn">Node</span>:
+    val: <span class="fn">int</span>
+    children: <span class="fn">list</span> = field(default_factory=<span class="fn">list</span>)  <span class="cm"># never `= []` here!</span>
+
+p1, p2 = Point(<span class="dc">1</span>, <span class="dc">2</span>), Point(<span class="dc">1</span>, <span class="dc">2</span>)
+p1 == p2       <span class="cm"># True — auto-generated __eq__</span>
+p1.x = <span class="dc">5</span>       <span class="cm"># FrozenInstanceError</span></pre></div>
+<div class="block"><div class="lbl">__slots__ — trade flexibility for memory</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">Point</span>:
+    __slots__ = (<span class="st">"x"</span>, <span class="st">"y"</span>)   <span class="cm"># no per-instance __dict__</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, x, y):
+        self.x, self.y = x, y
+
+p = Point(<span class="dc">1</span>, <span class="dc">2</span>)
+p.z = <span class="dc">3</span>          <span class="cm"># AttributeError — can't add new attrs</span>
+
+<span class="cm"># Saves memory per instance and speeds up attribute access —</span>
+<span class="cm"># worth it for classes you instantiate millions of times</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="enum intenum auto flag intflag unique constants type safe">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Enums</span><div class="card-meta"><span class="badge bg-g">type-safe constants</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Prefer <code>Enum</code> over raw strings/ints for a fixed set of related constants — it's type-safe, self-documenting, and members compare by identity (fast, unambiguous).</div>
+<div class="two">
+<div class="block"><div class="lbl">Basic Enum</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> enum <span class="kw">import</span> Enum, auto
+
+<span class="kw">class</span> <span class="fn">Status</span>(Enum):
+    PENDING = auto()      <span class="cm"># auto-assigns 1, 2, 3...</span>
+    ACTIVE = auto()
+    DONE = auto()
+
+s = Status.ACTIVE
+s.name             <span class="cm"># 'ACTIVE'</span>
+s.value            <span class="cm"># 2</span>
+s <span class="kw">is</span> Status.ACTIVE <span class="cm"># True — enum members are singletons</span>
+<span class="fn">list</span>(Status)       <span class="cm"># [Status.PENDING, Status.ACTIVE, Status.DONE]</span>
+Status(<span class="dc">2</span>)          <span class="cm"># Status.ACTIVE — look up by value</span></pre></div>
+<div class="block"><div class="lbl">IntEnum &amp; Flag</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> enum <span class="kw">import</span> IntEnum, Flag, auto
+
+<span class="kw">class</span> <span class="fn">Priority</span>(IntEnum):       <span class="cm"># behaves like an int — comparable, usable in math</span>
+    LOW = <span class="dc">1</span>
+    HIGH = <span class="dc">2</span>
+
+Priority.LOW &lt; Priority.HIGH    <span class="cm"># True — plain Enum can't do this</span>
+
+<span class="kw">class</span> <span class="fn">Permission</span>(Flag):        <span class="cm"># bitwise-combinable flags</span>
+    READ = auto()
+    WRITE = auto()
+    EXEC = auto()
+
+p = Permission.READ | Permission.WRITE
+Permission.READ <span class="kw">in</span> p            <span class="cm"># True</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="import module package init py relative absolute sys modules circular import name main guard">
+<div class="card-head" onclick="tog(this)"><span class="card-title">The import system</span><div class="card-meta"><span class="badge bg-b">modules</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">A <strong>module</strong> is a single <code>.py</code> file; a <strong>package</strong> is a directory with <code>__init__.py</code>. Modules are cached in <code>sys.modules</code> after first import — reimporting is a no-op, so top-level module code runs exactly once per process.</div>
+<div class="two">
+<div class="block"><div class="lbl">Import forms &amp; package layout</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> math                    <span class="cm"># binds name 'math'</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np             <span class="cm"># alias</span>
+<span class="kw">from</span> math <span class="kw">import</span> sqrt, pi      <span class="cm"># bind names directly</span>
+<span class="kw">from</span> math <span class="kw">import</span> *              <span class="cm"># avoid — pollutes namespace</span>
+
+<span class="cm"># mypkg/</span>
+<span class="cm">#   __init__.py       <- makes it a package, runs on first import</span>
+<span class="cm">#   utils.py</span>
+<span class="cm">#   sub/</span>
+<span class="cm">#     __init__.py</span>
+<span class="cm">#     helpers.py</span>
+
+<span class="kw">from</span> mypkg <span class="kw">import</span> utils
+<span class="kw">from</span> mypkg.sub <span class="kw">import</span> helpers
+<span class="kw">from</span> . <span class="kw">import</span> utils            <span class="cm"># relative — only inside a package</span>
+<span class="kw">from</span> ..sub <span class="kw">import</span> helpers      <span class="cm"># relative, one level up</span></pre></div>
+<div class="block"><div class="lbl">__name__ guard &amp; circular imports</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Only runs when executed directly, not when imported</span>
+<span class="kw">def</span> <span class="fn">main</span>():
+    ...
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    main()
+
+<span class="cm"># Circular import (a.py imports b, b.py imports a) — fix by:</span>
+<span class="cm"># 1. importing inside the function that needs it, not at module top</span>
+<span class="cm"># 2. moving shared code into a third module both can import</span>
+<span class="cm"># 3. importing the module, not names from it: `import a` then `a.func()`</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="id is equality identity reference interning small int cache mutable default argument shallow deep copy garbage collection refcount">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Object model &amp; memory gotchas</span><div class="card-meta"><span class="badge bg-r">under the hood</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Variables are <strong>names bound to objects</strong>, not boxes holding values — <code>a = b</code> makes <code>a</code> point at the same object as <code>b</code>. <code>is</code> compares identity (<code>id()</code>); <code>==</code> compares value via <code>__eq__</code>. CPython caches small ints (-5..256) and some strings, so <code>is</code> can look like it "works" on them — never rely on that.</div>
+<div class="block"><div class="lbl">Identity vs equality, and why caching fools people</div><button class="cp" onclick="c(this)">copy</button><pre>a = <span class="dc">256</span>; b = <span class="dc">256</span>
+a <span class="kw">is</span> b            <span class="cm"># True — CPython caches small ints (-5..256)</span>
+a = <span class="dc">257</span>; b = <span class="dc">257</span>
+a <span class="kw">is</span> b            <span class="cm"># False (usually) — outside the cache, new objects</span>
+a == b            <span class="cm"># True — always compare VALUES with ==, never with is</span>
+
+x = [<span class="dc">1</span>, <span class="dc">2</span>]; y = [<span class="dc">1</span>, <span class="dc">2</span>]
+x == y            <span class="cm"># True (same contents)</span>
+x <span class="kw">is</span> y            <span class="cm"># False (different objects)</span></pre></div>
+<div class="two">
+<div class="block"><div class="lbl">Mutable default argument — the classic trap</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">append_to</span>(item, bucket=[]):  <span class="cm"># created ONCE, at def time</span>
+    bucket.append(item)
+    <span class="kw">return</span> bucket
+
+append_to(<span class="dc">1</span>)     <span class="cm"># [1]</span>
+append_to(<span class="dc">2</span>)     <span class="cm"># [1, 2] <- surprise! same list reused</span>
+
+<span class="kw">def</span> <span class="fn">append_to</span>(item, bucket=<span class="kw">None</span>):  <span class="cm"># correct fix</span>
+    bucket = bucket <span class="kw">if</span> bucket <span class="kw">is not</span> <span class="kw">None</span> <span class="kw">else</span> []
+    bucket.append(item)
+    <span class="kw">return</span> bucket</pre></div>
+<div class="block"><div class="lbl">Reference counting &amp; cycles</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> sys, gc
+
+sys.getrefcount(x)   <span class="cm"># current refcount (includes this call's temp ref)</span>
+<span class="cm"># CPython frees an object the instant its refcount hits 0</span>
+
+<span class="cm"># Reference cycles (a.next = b; b.next = a) are never caught by</span>
+<span class="cm"># refcounting alone — the generational `gc` module periodically</span>
+<span class="cm"># finds and collects unreachable cycles</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Shallow vs deep copy</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> copy
+
+row = [<span class="dc">0</span>, <span class="dc">0</span>, <span class="dc">0</span>]
+grid_shallow = [row] * <span class="dc">3</span>          <span class="cm"># 3 references to the SAME row</span>
+grid_shallow[<span class="dc">0</span>][<span class="dc">0</span>] = <span class="dc">9</span>            <span class="cm"># mutates all three rows!</span>
+
+grid = [[<span class="dc">0</span>]*<span class="dc">3</span> <span class="kw">for</span> _ <span class="kw">in</span> range(<span class="dc">3</span>)]  <span class="cm"># correct — independent rows</span>
+grid_deep = copy.deepcopy(grid)   <span class="cm"># recursively copies nested structures</span>
+grid_shallow2 = copy.copy(grid)   <span class="cm"># copies outer list only, inner lists shared</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="list array pointer over-allocation growth amortized append string immutable intern pep 393 concatenation join under the hood">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Under the hood — lists &amp; strings</span><div class="card-meta"><span class="badge bg-o">CPython internals</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Lists are <strong>arrays of pointers</strong> (<code>PyObject*</code>), not raw values — even <code>[1, 2, 3]</code> stores 3 pointers to separately-allocated int objects. Strings are <strong>immutable</strong> arrays of Unicode code points — every "mutation" allocates a brand-new string.</div>
+<div class="two">
+<div class="block"><div class="lbl">List: dynamic array with over-allocation</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># CPython over-allocates on growth: roughly n + n//8 (+ a small</span>
+<span class="cm"># constant), NOT exactly n. Most appends land in already-allocated</span>
+<span class="cm"># space -> O(1); occasional growth reallocates + copies -> O(n).</span>
+<span class="cm"># Averaged over many appends, that's amortized O(1).</span>
+
+lst.append(x)        <span class="cm"># O(1) amortized</span>
+lst.insert(<span class="dc">0</span>, x)      <span class="cm"># O(n) — every existing pointer shifts right</span>
+lst.pop(<span class="dc">0</span>)            <span class="cm"># O(n) — every remaining pointer shifts left</span>
+lst.pop()             <span class="cm"># O(1) — no shifting, just decrement length</span></pre></div>
+<div class="block"><div class="lbl">String: immutable, interned, and why += is O(n²)</div><button class="cp" onclick="c(this)">copy</button><pre>s = <span class="st">"hello"</span>
+s += <span class="st">" world"</span>       <span class="cm"># does NOT mutate — allocates a whole new string</span>
+                    <span class="cm"># and copies both halves into it, every time</span>
+
+<span class="cm"># Loop concatenation is O(n^2) total: n iterations x O(k) copy each</span>
+result = <span class="st">""</span>
+<span class="kw">for</span> ch <span class="kw">in</span> chars:
+    result += ch     <span class="cm"># AVOID — quadratic</span>
+
+result = <span class="st">""</span>.join(chars)   <span class="cm"># O(n) total — size computed once</span>
+
+<span class="cm"># CPython interns short identifier-like strings, so `is` may</span>
+<span class="cm"># appear to work — still never rely on it for correctness</span>
+a = <span class="st">"hi"</span>; b = <span class="st">"hi"</span>
+a <span class="kw">is</span> b              <span class="cm"># True, likely — interned; don't depend on this</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="dict hash table open addressing collision resize load factor insertion order set hashable contract map under the hood">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Under the hood — dict &amp; set</span><div class="card-meta"><span class="badge bg-o">CPython internals</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">CPython's dict is a hash table using <strong>open addressing</strong> (probing to another slot on collision), not linked-list chaining. Since 3.7, dicts also guarantee <strong>insertion order</strong> — via a compact array of entries alongside a sparser index table. Any key must be hashable, and <strong>equal objects must hash equal</strong>.</div>
+<div class="two">
+<div class="block"><div class="lbl">How lookup &amp; resizing work</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># d[k] roughly:</span>
+<span class="cm"># 1. h = hash(k)</span>
+<span class="cm"># 2. slot = h % table_size   (probe on collision)</span>
+<span class="cm"># 3. walk the probe sequence, comparing keys with ==,</span>
+<span class="cm">#    until the key is found or an empty slot is hit</span>
+<span class="cm"># => O(1) average, O(n) worst case (bad hash / many collisions)</span>
+
+<span class="cm"># The table resizes (grows + rehashes everything) once the load</span>
+<span class="cm"># factor passes ~2/3 — same amortized-O(1) idea as list growth</span></pre></div>
+<div class="block"><div class="lbl">The hashable contract</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">BadKey</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, v): self.v = v
+    <span class="kw">def</span> <span class="fn">__eq__</span>(self, other): <span class="kw">return</span> self.v == other.v
+    <span class="cm"># forgot __hash__ -> defining __eq__ alone makes the class</span>
+    <span class="cm"># UNHASHABLE (Python sets __hash__ to None automatically)</span>
+
+d = {}
+d[BadKey(<span class="dc">1</span>)] = <span class="st">"x"</span>   <span class="cm"># TypeError: unhashable type</span>
+
+<span class="cm"># Rule: if a == b then hash(a) == hash(b) — always define both.</span>
+<span class="cm"># Mutable objects generally shouldn't be hashable: mutating a key's</span>
+<span class="cm"># fields after insertion silently breaks lookups.</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="balanced binary search tree avl red black tree rotation invariant self balancing sortedcontainers sortedlist follow up union find">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Balanced trees — AVL &amp; Red-Black</span><div class="card-meta"><span class="badge bg-p">follow-up favorite</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">Python has <strong>no built-in self-balancing BST</strong> — <code>dict</code>/<code>set</code> are hash tables, not ordered trees. For ordered operations (range queries, floor/ceil, k-th element) with guaranteed O(log n), reach for <code>sortedcontainers.SortedList</code> in practice — but be able to explain the theory from scratch.</div>
+<div class="two">
+<div class="block"><div class="lbl">AVL tree — balance by height</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Invariant: for every node, |height(left) - height(right)| &lt;= 1</span>
+<span class="cm"># Rebalance after insert/delete via rotations, checked bottom-up</span>
+
+<span class="kw">class</span> <span class="fn">AVLNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, val):
+        self.val, self.left, self.right, self.height = val, <span class="kw">None</span>, <span class="kw">None</span>, <span class="dc">1</span>
+
+<span class="kw">def</span> <span class="fn">height</span>(n): <span class="kw">return</span> n.height <span class="kw">if</span> n <span class="kw">else</span> <span class="dc">0</span>
+<span class="kw">def</span> <span class="fn">balance_factor</span>(n): <span class="kw">return</span> height(n.left) - height(n.right)
+
+<span class="kw">def</span> <span class="fn">rotate_right</span>(y):           <span class="cm"># y is unbalanced, left-heavy</span>
+    x, t = y.left, y.left.right
+    x.right, y.left = y, t
+    y.height = <span class="dc">1</span> + <span class="fn">max</span>(height(y.left), height(y.right))
+    x.height = <span class="dc">1</span> + <span class="fn">max</span>(height(x.left), height(x.right))
+    <span class="kw">return</span> x                   <span class="cm"># x is the new subtree root</span></pre></div>
+<div class="block"><div class="lbl">Red-Black tree — balance by color rules</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Invariants (looser than AVL -> cheaper writes, still O(log n)):</span>
+<span class="cm"># 1. Every node is red or black</span>
+<span class="cm"># 2. Root is black</span>
+<span class="cm"># 3. A red node's children are both black (no two reds in a row)</span>
+<span class="cm"># 4. Every root->None path has the same number of black nodes</span>
+
+<span class="cm"># Rebalance after insert = recolor + up to 2 rotations, vs AVL's</span>
+<span class="cm"># possibly-many rotations up the path. This is WHY std::map (C++)</span>
+<span class="cm"># and TreeMap (Java) use red-black trees: cheaper writes, at the</span>
+<span class="cm"># cost of a slightly less-tight balance (taller by a constant factor)</span>
+
+<span class="cm"># AVL:       stricter balance -> faster lookups, slower writes</span>
+<span class="cm"># Red-Black: looser balance   -> faster writes, slightly slower lookups</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Practical Python: sortedcontainers</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> sortedcontainers <span class="kw">import</span> SortedList
+
+sl = SortedList([<span class="dc">5</span>, <span class="dc">1</span>, <span class="dc">4</span>])
+sl.add(<span class="dc">3</span>)                 <span class="cm"># O(log n) amortized</span>
+sl.index(<span class="dc">4</span>)                <span class="cm"># O(log n) — rank of an element</span>
+sl[<span class="dc">0</span>]                      <span class="cm"># O(1) — min</span>
+sl[-<span class="dc">1</span>]                     <span class="cm"># O(1) — max</span>
+sl.bisect_left(<span class="dc">3</span>)          <span class="cm"># O(log n) — insertion point</span>
+
+<span class="cm"># Under the hood: NOT a tree — a "list of sqrt(n)-sized sorted</span>
+<span class="cm"># sublists", tuned for CPython's constant factors. Know this</span>
+<span class="cm"># trade-off if asked "why not a real balanced tree here?"</span></pre></div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="iterator generator yield next stopiteration lazy evaluation iterable protocol generator expression">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Iterators, generators &amp; the iteration protocol</span><div class="card-meta"><span class="badge bg-t">protocol</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note"><code>for x in obj</code> desugars to <code>iter(obj)</code> then repeated <code>next()</code> calls until <code>StopIteration</code>. A <strong>generator function</strong> (uses <code>yield</code>) builds an object that implements this protocol for you, pausing/resuming its own frame between values instead of computing everything up front.</div>
+<div class="two">
+<div class="block"><div class="lbl">The protocol, written by hand</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">CountUp</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n): self.n = n
+    <span class="kw">def</span> <span class="fn">__iter__</span>(self):          <span class="cm"># iterable -> returns an iterator</span>
+        self.i = <span class="dc">0</span>; <span class="kw">return</span> self
+    <span class="kw">def</span> <span class="fn">__next__</span>(self):
+        <span class="kw">if</span> self.i >= self.n: <span class="kw">raise</span> StopIteration
+        self.i += <span class="dc">1</span>
+        <span class="kw">return</span> self.i
+
+<span class="kw">for</span> x <span class="kw">in</span> CountUp(<span class="dc">3</span>): <span class="fn">print</span>(x)     <span class="cm"># 1 2 3</span></pre></div>
+<div class="block"><div class="lbl">Generators — same protocol, far less code</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">count_up</span>(n):
+    i = <span class="dc">0</span>
+    <span class="kw">while</span> i &lt; n:
+        i += <span class="dc">1</span>
+        <span class="kw">yield</span> i        <span class="cm"># pauses here, resumes on the next next()</span>
+
+gen = count_up(<span class="dc">3</span>)
+<span class="fn">next</span>(gen)          <span class="cm"># 1 — body runs only up to the yield</span>
+<span class="fn">next</span>(gen)          <span class="cm"># 2</span>
+
+<span class="cm"># Generator expression — lazy, O(1) memory vs a list comprehension's O(n)</span>
+total = <span class="fn">sum</span>(x**<span class="dc">2</span> <span class="kw">for</span> x <span class="kw">in</span> range(<span class="dc">10</span>**<span class="dc">8</span>))</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="decorator closure functools wraps context manager enter exit contextlib with statement property staticmethod classmethod as decorators">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Decorators, closures &amp; context managers</span><div class="card-meta"><span class="badge bg-g">wrapping code</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">A decorator is just a function taking a function and returning one — <code>@dec</code> above <code>def f</code> is exactly <code>f = dec(f)</code>. Context managers (<code>with</code>) guarantee cleanup runs even on exception, via <code>__exit__</code>.</div>
+<div class="two">
+<div class="block"><div class="lbl">Writing a decorator correctly</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> functools
+
+<span class="kw">def</span> <span class="fn">timer</span>(func):
+    @functools.wraps(func)   <span class="cm"># preserves func.__name__/__doc__ — don't skip</span>
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+        <span class="kw">import</span> time
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        <span class="fn">print</span>(f<span class="st">"{func.__name__} took {time.perf_counter()-start:.4f}s"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+@timer
+<span class="kw">def</span> <span class="fn">slow</span>(): ...
+<span class="cm"># equivalent to: slow = timer(slow)</span></pre></div>
+<div class="block"><div class="lbl">Context manager — two ways</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">FileLock</span>:
+    <span class="kw">def</span> <span class="fn">__enter__</span>(self):
+        <span class="fn">print</span>(<span class="st">"acquire lock"</span>); <span class="kw">return</span> self
+    <span class="kw">def</span> <span class="fn">__exit__</span>(self, exc_type, exc_val, exc_tb):
+        <span class="fn">print</span>(<span class="st">"release lock"</span>)      <span class="cm"># runs even if the body raised</span>
+        <span class="kw">return</span> <span class="kw">False</span>                <span class="cm"># False = don't suppress the exception</span>
+
+<span class="kw">from</span> contextlib <span class="kw">import</span> contextmanager
+@contextmanager
+<span class="kw">def</span> <span class="fn">file_lock</span>():
+    <span class="fn">print</span>(<span class="st">"acquire lock"</span>)
+    <span class="kw">try</span>:
+        <span class="kw">yield</span>                        <span class="cm"># code inside `with` runs here</span>
+    <span class="kw">finally</span>:
+        <span class="fn">print</span>(<span class="st">"release lock"</span>)        <span class="cm"># guaranteed cleanup</span>
+
+<span class="kw">with</span> file_lock():
+    ...</pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="gil global interpreter lock threading multiprocessing asyncio concurrency parallelism thread safety race condition">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Concurrency fundamentals — GIL, threading, multiprocessing, asyncio</span><div class="card-meta"><span class="badge bg-r">under the hood</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">The <strong>GIL</strong> lets only one thread execute Python bytecode at a time. <code>threading</code> still gives real concurrency for <strong>I/O-bound</strong> work (the GIL is released during I/O waits) but no CPU parallelism. For <strong>CPU-bound</strong> work use <code>multiprocessing</code> — separate processes, separate GILs. <code>asyncio</code> is single-threaded cooperative concurrency: no GIL contention, but one stalled coroutine blocks everything.</div>
+<div class="two">
+<div class="block"><div class="lbl">Picking the right tool</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># I/O-bound (network, disk, waiting) -> threading or asyncio</span>
+<span class="cm"># CPU-bound (heavy computation)      -> multiprocessing</span>
+
+<span class="kw">import</span> threading
+t = threading.Thread(target=fetch_url, args=(url,))
+t.start(); t.join()
+
+<span class="kw">import</span> multiprocessing <span class="kw">as</span> mp
+p = mp.Process(target=cpu_heavy_fn, args=(data,))
+p.start(); p.join()          <span class="cm"># separate process, separate memory</span>
+
+<span class="kw">import</span> asyncio
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch</span>(url):
+    <span class="kw">await</span> asyncio.sleep(<span class="dc">1</span>)   <span class="cm"># yields control — doesn't block the loop</span>
+asyncio.run(fetch(url))</pre></div>
+<div class="block"><div class="lbl">Thread safety essentials</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> threading
+
+counter = <span class="dc">0</span>
+lock = threading.Lock()
+
+<span class="kw">def</span> <span class="fn">increment</span>():
+    <span class="kw">global</span> counter
+    <span class="kw">with</span> lock:              <span class="cm"># without this: lost updates (race condition)</span>
+        counter += <span class="dc">1</span>          <span class="cm"># += is NOT atomic — read, modify, write</span>
+
+<span class="cm"># Even with the GIL, `x += 1` across threads is unsafe: the GIL can</span>
+<span class="cm"># switch threads BETWEEN bytecode instructions, not just statements.</span></pre></div>
+</div>
+</div></div>
+
+<div class="card" data-cat="lld" data-kw="best practices clean code checklist single responsibility composition immutability naming type hints solid design review">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Low-level design &amp; code quality checklist</span><div class="card-meta"><span class="badge bg-o">best practices</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="tip-box"><span class="tip-label">Before you call a design "done"</span>
+<strong>Single responsibility</strong> — each class/function does one thing; if describing it needs "and", split it.<br>
+<strong>Composition over inheritance</strong> — inherit only for genuine is-a relationships; otherwise delegate to a member.<br>
+<strong>Encapsulate state</strong> — expose behavior, not raw mutable fields; validate at the boundary (<code>@property</code>), not scattered through the codebase.<br>
+<strong>Favor immutability</strong> — frozen dataclasses / tuples / namedtuples where state shouldn't change; fewer invariants to protect.<br>
+<strong>Name for intent, not implementation</strong> — <code>get_active_users()</code>, not <code>get_data_where_flag_true()</code>.<br>
+<strong>Type hints on public interfaces</strong> — <code>def f(x: int) -> list[str]:</code> documents the contract and catches misuse early.<br>
+<strong>Depend on abstractions</strong> — accept a <code>Protocol</code>/ABC, not a concrete class, when a function just needs "something with <code>.foo()</code>".<br>
+<strong>Keep <code>__init__</code> cheap</strong> — no I/O, no heavy computation; use a <code>@classmethod</code> factory for expensive construction.<br>
+<strong>Fail fast, fail clearly</strong> — validate inputs early and raise a specific exception with a useful message, not a generic one deep in the call stack.
+</div>
 </div></div>
 
 <div id="nr" class="nr" style="display:none">No sections match — try a different search term.</div>
