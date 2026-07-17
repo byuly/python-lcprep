@@ -2287,7 +2287,9 @@ lock = threading.Lock()
 <span class="kw">class</span> <span class="fn">OrderService</span>:
     <span class="kw">def</span> <span class="fn">__init__</span>(self, store: Repository):  <span class="cm"># a Protocol/ABC, not a concrete type</span>
         self.store = store             <span class="cm"># any Repository works — swap freely, fake in tests</span></pre></div>
-<div class="block"><div class="lbl">Open/Closed — extend without editing</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># Adding a shape needs a NEW class, not an edit to existing logic</span>
+<div class="block"><div class="lbl">Open/Closed — extend without editing</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="cm"># Adding a shape needs a NEW class, not an edit to existing logic</span>
 <span class="kw">class</span> <span class="fn">Shape</span>(ABC):
     @abstractmethod
     <span class="kw">def</span> <span class="fn">area</span>(self) -> <span class="fn">float</span>: ...
@@ -2340,7 +2342,9 @@ lock = threading.Lock()
 <div class="card-body">
 <div class="note">Behavioral patterns are about <strong>how objects collaborate and where responsibility lives</strong>. These four cover most interview scenarios — and each one is really "replace a growing <code>if/elif</code> ladder or a hard-coded choice with polymorphism."</div>
 <div class="two">
-<div class="block"><div class="lbl">Strategy &amp; Observer</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># STRATEGY — swap an algorithm at runtime via a shared interface</span>
+<div class="block"><div class="lbl">Strategy &amp; Observer</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> typing <span class="kw">import</span> Protocol
+
+<span class="cm"># STRATEGY — swap an algorithm at runtime via a shared interface</span>
 <span class="kw">class</span> <span class="fn">SortStrategy</span>(Protocol):
     <span class="kw">def</span> <span class="fn">sort</span>(self, data: <span class="fn">list</span>) -> <span class="fn">list</span>: ...
 
@@ -2356,7 +2360,9 @@ lock = threading.Lock()
     <span class="kw">def</span> <span class="fn">subscribe</span>(self, fn): self._subs.append(fn)
     <span class="kw">def</span> <span class="fn">notify</span>(self, event):
         <span class="kw">for</span> fn <span class="kw">in</span> self._subs: fn(event)  <span class="cm"># push updates to all listeners</span></pre></div>
-<div class="block"><div class="lbl">State &amp; Command</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># STATE — behavior changes with internal state; each state is a class</span>
+<div class="block"><div class="lbl">State &amp; Command</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="cm"># STATE — behavior changes with internal state; each state is a class</span>
 <span class="kw">class</span> <span class="fn">State</span>(ABC):
     @abstractmethod
     <span class="kw">def</span> <span class="fn">next</span>(self) -> <span class="st">"State"</span>: ...
@@ -2535,7 +2541,9 @@ result = <span class="kw">await</span> coro          <span class="cm"># NOW it r
 <span class="cm"># Top-level entry point — starts the event loop</span>
 <span class="kw">import</span> asyncio
 result = asyncio.run(fetch(url))</pre></div>
-<div class="block"><div class="lbl">The #1 rule: never block the event loop</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">async</span> <span class="kw">def</span> <span class="fn">bad</span>():
+<div class="block"><div class="lbl">The #1 rule: never block the event loop</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> asyncio, time
+
+<span class="kw">async</span> <span class="kw">def</span> <span class="fn">bad</span>():
     time.sleep(<span class="dc">2</span>)             <span class="cm"># BLOCKS the whole loop — nothing else</span>
                             <span class="cm"># can run for 2 seconds!</span>
 
@@ -2589,7 +2597,9 @@ results = <span class="kw">await</span> asyncio.gather(*tasks, return_exceptions
 <div class="card-body">
 <div class="note">Firing thousands of requests at once just gets you rate-limited (or banned). Bound concurrency with a <code>Semaphore</code>, and respect the server's own signals — <code>429</code> status, <code>Retry-After</code> header.</div>
 <div class="two">
-<div class="block"><div class="lbl">Semaphore — cap concurrent in-flight requests</div><button class="cp" onclick="c(this)">copy</button><pre>sem = asyncio.Semaphore(<span class="dc">10</span>)          <span class="cm"># at most 10 requests in flight</span>
+<div class="block"><div class="lbl">Semaphore — cap concurrent in-flight requests</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> asyncio
+
+sem = asyncio.Semaphore(<span class="dc">10</span>)          <span class="cm"># at most 10 requests in flight</span>
 
 <span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_bounded</span>(client, url):
     <span class="kw">async</span> <span class="kw">with</span> sem:                  <span class="cm"># acquire; released automatically</span>
@@ -2613,7 +2623,7 @@ results = <span class="kw">await</span> asyncio.gather(*(fetch_bounded(client, u
 <div class="card-head" onclick="tog(this)"><span class="card-title">Retries with exponential backoff</span><div class="card-meta"><span class="badge bg-g">resilience</span><span class="arrow">▼</span></div></div>
 <div class="card-body">
 <div class="note">Only retry <strong>transient, idempotent-safe</strong> failures — timeouts, connection errors, 5xx, 429. Never blindly retry a plain 4xx (it'll fail identically) or a non-idempotent POST without an idempotency key. Add <strong>jitter</strong> so many clients don't retry in lockstep and stampede the server.</div>
-<div class="block"><div class="lbl">Exponential backoff with jitter</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> random, asyncio
+<div class="block"><div class="lbl">Exponential backoff with jitter</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> random, asyncio, httpx
 
 <span class="kw">async</span> <span class="kw">def</span> <span class="fn">fetch_with_retry</span>(client, url, max_attempts=<span class="dc">5</span>):
     <span class="kw">for</span> attempt <span class="kw">in</span> range(max_attempts):
@@ -2634,7 +2644,9 @@ results = <span class="kw">await</span> asyncio.gather(*(fetch_bounded(client, u
 <div class="card-head" onclick="tog(this)"><span class="card-title">Designing an API client wrapper</span><div class="card-meta"><span class="badge bg-b">class design</span><span class="arrow">▼</span></div></div>
 <div class="card-body">
 <div class="note">Don't scatter <code>requests</code>/<code>httpx</code> calls throughout the codebase — wrap the API behind a small class. Callers get typed methods and a stable interface; you get one place to change auth, retries, and error handling.</div>
-<div class="block"><div class="lbl">A clean client wrapper</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">APIError</span>(Exception):
+<div class="block"><div class="lbl">A clean client wrapper</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">import</span> httpx
+
+<span class="kw">class</span> <span class="fn">APIError</span>(Exception):
     <span class="kw">def</span> <span class="fn">__init__</span>(self, status_code, message):
         self.status_code = status_code
         super().__init__(message)
@@ -2739,7 +2751,9 @@ app = FastAPI()
     <span class="kw">if</span> user_exists(body.email):
         <span class="kw">raise</span> HTTPException(status_code=<span class="dc">409</span>, detail=<span class="st">"email already registered"</span>)
     <span class="kw">return</span> save_user(body)</pre></div>
-<div class="block"><div class="lbl">Idempotency for unsafe methods</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># A client retrying a timed-out POST /orders could otherwise double-</span>
+<div class="block"><div class="lbl">Idempotency for unsafe methods</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">from</span> fastapi <span class="kw">import</span> Header
+
+<span class="cm"># A client retrying a timed-out POST /orders could otherwise double-</span>
 <span class="cm"># charge the user. Let the client supply an idempotency key; dedupe:</span>
 
 @app.post(<span class="st">"/orders"</span>)
