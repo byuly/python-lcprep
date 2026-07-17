@@ -2373,6 +2373,61 @@ lock = threading.Lock()
 </div>
 </div></div>
 
+<div class="card" data-cat="lld" data-kw="callback first class function higher order pass function handler event bus observer register subscribe unsubscribe partial bound method late binding closure hell async">
+<div class="card-head" onclick="tog(this)"><span class="card-title">Callbacks &amp; first-class functions</span><div class="card-meta"><span class="badge bg-p">event-driven</span><span class="arrow">▼</span></div></div>
+<div class="card-body">
+<div class="note">A callback is a function you hand to something else <strong>to be invoked later</strong> ("it'll call you back"). It works because functions are first-class objects — pass <code>fn</code> (the object), never <code>fn()</code> (which calls it now). Callbacks are the primitive beneath event systems, the Observer pattern, and any framework that <strong>pushes data to you</strong> through a function you supply (e.g. a market feed calling you on each quote).</div>
+<div class="two">
+<div class="block"><div class="lbl">Pass the function object, not its call</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">def</span> <span class="fn">on_done</span>(result):        <span class="cm"># a callback — someone else will call this</span>
+    <span class="fn">print</span>(<span class="st">"got"</span>, result)
+
+<span class="kw">def</span> <span class="fn">run</span>(task, callback):    <span class="cm"># higher-order fn — accepts a callback</span>
+    result = task()
+    callback(result)         <span class="cm"># "calls you back" when done</span>
+
+run(compute, on_done)        <span class="cm"># pass on_done — NO parens</span>
+run(compute, on_done())      <span class="cm"># WRONG — runs it now, passes its return value</span>
+
+<span class="cm"># Any CALLABLE works as a callback:</span>
+run(compute, <span class="kw">lambda</span> r: <span class="fn">print</span>(r))   <span class="cm"># lambda</span>
+run(compute, logger.info)              <span class="cm"># bound method (carries self)</span>
+<span class="kw">from</span> functools <span class="kw">import</span> partial
+run(compute, partial(save, path=<span class="st">"/tmp"</span>))  <span class="cm"># pre-bind arguments</span></pre></div>
+<div class="block"><div class="lbl">Registering many — the event/observer shape</div><button class="cp" onclick="c(this)">copy</button><pre><span class="kw">class</span> <span class="fn">EventBus</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self._handlers = {}          <span class="cm"># event -> list of callbacks</span>
+
+    <span class="kw">def</span> <span class="fn">on</span>(self, event, fn):
+        self._handlers.setdefault(event, []).append(fn)
+        <span class="kw">return</span> <span class="kw">lambda</span>: self._handlers[event].remove(fn)  <span class="cm"># unsubscribe handle</span>
+
+    <span class="kw">def</span> <span class="fn">emit</span>(self, event, data):
+        <span class="kw">for</span> fn <span class="kw">in</span> self._handlers.get(event, []):
+            <span class="kw">try</span>:
+                fn(data)             <span class="cm"># one bad handler must not kill the rest</span>
+            <span class="kw">except</span> Exception <span class="kw">as</span> e:
+                log(e)
+
+bus = EventBus()
+off = bus.on(<span class="st">"tick"</span>, update_price)   <span class="cm"># register</span>
+bus.emit(<span class="st">"tick"</span>, <span class="dc">101.5</span>)              <span class="cm"># invokes update_price(101.5)</span>
+off()                                <span class="cm"># deregister</span></pre></div>
+</div>
+<div class="block"><div class="lbl">Design gotchas &amp; the case for async</div><button class="cp" onclick="c(this)">copy</button><pre><span class="cm"># LATE-BINDING CLOSURE TRAP — these all print 2, not 0/1/2:</span>
+cbs = [<span class="kw">lambda</span>: <span class="fn">print</span>(i) <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dc">3</span>)]
+<span class="kw">for</span> cb <span class="kw">in</span> cbs: cb()          <span class="cm"># 2, 2, 2 — they share `i`, read at CALL time</span>
+
+cbs = [<span class="kw">lambda</span> i=i: <span class="fn">print</span>(i) <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dc">3</span>)]  <span class="cm"># fix: bind per-iteration</span>
+<span class="kw">for</span> cb <span class="kw">in</span> cbs: cb()          <span class="cm"># 0, 1, 2</span>
+
+<span class="cm"># Checklist for a callback-based API:</span>
+<span class="cm"># - always allow UNsubscribe (return a handle / store by key) or you leak</span>
+<span class="cm"># - isolate failures: wrap each callback in try/except in the dispatcher</span>
+<span class="cm"># - define ordering + re-entrancy (may a callback register another one?)</span>
+<span class="cm"># - deeply nested callbacks ("callback hell") are WHY async/await exists:</span>
+<span class="cm">#   `result = await coro` reads top-to-bottom instead of nesting handlers</span></pre></div>
+</div></div>
+
 <div class="card" data-cat="lld" data-kw="exception handling error design eafp lbyl custom exception hierarchy raise from try except finally context manager fail fast">
 <div class="card-head" onclick="tog(this)"><span class="card-title">Exception design — EAFP, hierarchies &amp; cleanup</span><div class="card-meta"><span class="badge bg-r">error handling</span><span class="arrow">▼</span></div></div>
 <div class="card-body">
